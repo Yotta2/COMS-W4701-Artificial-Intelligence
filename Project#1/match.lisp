@@ -7,7 +7,32 @@
 )
 
 (defun startwith?(x)
-	(equal (elt (symbol-name x) 0) #\?)
+	(cond
+		((numberp x) nil)
+		((equal (elt (symbol-name x) 0) #\?) t)
+		(t nil)
+	)
+)
+(defun startwith!(x)
+	(cond
+		((numberp x) nil)
+		((equal (elt (symbol-name x) 0) #\!) t)
+		(t nil)
+	)
+)
+(defun startwith>(x)
+	(cond
+		((numberp x) nil)
+		((equal (elt (symbol-name x) 0) #\>) t)
+		(t nil)
+	)
+)
+(defun startwith<(x)
+	(cond
+		((numberp x) nil)
+		((equal (elt (symbol-name x) 0) #\<) t)
+		(t nil)
+	)
 )
 (defun is-vbl(x)
 	(cond
@@ -15,10 +40,42 @@
 		(t (startwith? x))
 	)
 )
+
+(defun satisfyOne(condition data a)
+	(let ((var (convertToVbl condition)))
+		(cond 
+			((startwith? condition) (equal (assoc var a) (list var data)))
+			((startwith! condition) (not (equal (assoc var a) (list var data))))
+			(t
+				(let ((num (car (cdr (assoc var a)))))
+					(cond
+						((and (numberp num) (numberp data))
+							(cond
+								((startwith> condition) (> data num))
+								((startwith< condition) (< data num))
+							)
+						)
+						(t nil)
+					)
+				)
+			)
+		)
+	)
+)
+
+(defun satisfyAll(conds data a) ;conds is a conditions list, a is a-list
+	(cond
+		((null conds) t)
+		((satisfyOne (car conds) data a) (satisfyAll (cdr conds) data a))
+		(t nil)
+	)
+)
 (defun rpm(p d a)
 	(cond
-		((and p (listp (car p)))	     ; (car p) is a list
+		((and p d (listp (car p)))	     ; (car p) is a list
 			(cond
+				((and (equal '& (car (car p))) (satisfyAll (cdr (car p)) (car d) a))  ; (car p) is Ampersand conditions list
+					(rpm (cdr p) (cdr d) a))
 				((listp (car d)) ;(car d) is a list
 					(let ((a-lists (rpm (car p) (car d) a)))
 						(cond
@@ -72,13 +129,27 @@
 					))
 				(t (rpm (cdr p) (cdr d) (cons (list (car p) (car d)) a))) ;it's unbound, bind it on the association list 
 			)
-		)	
+		)
+		((startwith! (car p)) ;encountered an exclamation mark
+			(let ((var (convertToVbl (car p))))
+				(cond
+					((equal (assoc var a) (list var (car d))) nil)
+					(t (rpm (cdr p) (cdr d) a))
+				)
+			)
+		)
 		((atom (car p))  ; encountered an atom/symbol
 			(cond 
 				((equal (car p) (car d)) (rpm (cdr p) (cdr d) a))
 				(t nil)
 			)
 		)
+	)
+)
+
+(defun convertToVbl(x)  ; convert an atom starting with "!" to an atom staring with "?"
+	(let ((str (concatenate 'string "?" (subseq (symbol-name x) 1))))
+		(intern (string-upcase str))
 	)
 )
 
