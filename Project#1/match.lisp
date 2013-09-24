@@ -1,9 +1,5 @@
 (defun match(p d)	
-	(setf ans '())
-	(rpm p d nil)
-	(cond 
-			(ans ans) 
-			(t t))
+	(rpm p d ())
 )
 
 (defun boundp_(x a)
@@ -21,14 +17,52 @@
 )
 (defun rpm(p d a)
 	(cond
+		((and p (listp (car p)))	     ; (car p) is a list
+			(cond
+				((listp (car d)) ;(car d) is a list
+					(let ((a-lists (rpm (car p) (car d) a)))
+						(cond
+							((atom a-lists) 
+								(cond 
+									((equal a-lists t) (rpm (cdr p) (cdr d) ()))
+									(t nil)
+								)
+							)
+							((null a-lists) (rpm (cdr p) (cdr d) ()))
+							(t (enum (cdr p) (cdr d) a-lists))
+						)
+					)
+				)
+				(t nil) 
+			)
+		)
 		((and (null p) (null d)) ;base case 1: exhausted both successfully
-			(setf ans (cons a ans)))
-		((eql '* (car p)) ;encounted a kleene *
-			(or (rpm (cdr p) d a) (rpm p (cdr d) a)))
-		((eql '? (car p)) ;encounted a "?"
-			(rpm (cdr p) (cdr d) a))
-		((or (null p) (null d)) nil) ;base case 2
-		((is-vbl (car p)) ;encounted a pattern variable
+			(cond
+				(a (cons a ()))
+				(t t)
+			)
+		)
+		((null d)
+			(cond
+				((equal (car p) '*) (rpm (cdr p) d a))
+				(t nil)
+			)
+		)
+		((eql '* (car p)) ;encountered a kleene *
+			(let ((ans1 (rpm (cdr p) d a)) (ans2 (rpm p (cdr d) a)))
+				(cond
+					((and (atom ans1) (atom ans2)) (or ans1 ans2))
+					((and (listp ans1) (listp ans2)) (append ans1 ans2))
+					((listp ans1) (ans1))
+					((listp ans2) (ans2))
+				)
+			 )
+		)
+		((eql '? (car p)) ;encountered a "?"
+			(rpm (cdr p) (cdr d) a)
+		)
+		((or (null p) (null d)) nil) ;base case 2: only one of them is nil
+		((is-vbl (car p)) ;encountered a pattern variable
 			(cond
 				((boundp_ (car p) a) ;if car p is a bound variable
 					(cond
@@ -37,19 +71,28 @@
 						(t nil) ; unequal, fail
 					))
 				(t (rpm (cdr p) (cdr d) (cons (list (car p) (car d)) a))) ;it's unbound, bind it on the association list 
-			))	
-		((atom (car p))
+			)
+		)	
+		((atom (car p))  ; encountered an atom/symbol
 			(cond 
-				((eql (car p) (car d)) (rpm (cdr p) (cdr d) a))
+				((equal (car p) (car d)) (rpm (cdr p) (cdr d) a))
 				(t nil)
-			))
-		(t
-			(let ((newa (rpm (car p) (car d) a))) ;pattern match the sublists
-				(cond 
-					((null newa) nil) ;fail
-					((listp newa) (rpm (cdr p) (cdr d) newa)) ;newa is a list
-					(t (rpm (cdr p)(cdr d) a)) ; newa is a list of nil
-					))
+			)
+		)
+	)
+)
+
+(defun enum(p d a-lists) ;enumerate all scenarios(a) in a-lists; a-lists should not the null for the first call
+	(cond
+		((null a-lists) nil)
+		(t (let ((hd (rpm p d (car a-lists))) (rst (enum p d (cdr a-lists))))
+				(cond
+					((and (atom hd) (atom rst)) (or hd rst))
+					((and (listp hd) (listp rst)) (append hd rst))
+					((listp hd) (hd))
+					((listp rst) (rst))
+				)
+			)
 		)
 	)
 )
