@@ -1,47 +1,47 @@
-(defun match(p d)	
+(defun match(p d)	; the wrapper function
 	(rpm p d ())
 )
 
-(defun boundp_(x a)
+(defun boundp_(x a)  ;find whether x is in association list a
 	(assoc x a)
 )
 
-(defun startwith?(x)
+(defun startwith?(x) ;determine whether a atom starts with '?'
 	(cond
 		((numberp x) nil)
 		((equal (elt (symbol-name x) 0) #\?) t)
 		(t nil)
 	)
 )
-(defun startwith!(x)
+(defun startwith!(x) ;determine whether a atom starts with '!'
 	(cond
 		((numberp x) nil)
 		((equal (elt (symbol-name x) 0) #\!) t)
 		(t nil)
 	)
 )
-(defun startwith>(x)
+(defun startwith>(x) ;determine whether a atom starts with '>'
 	(cond
 		((numberp x) nil)
 		((equal (elt (symbol-name x) 0) #\>) t)
 		(t nil)
 	)
 )
-(defun startwith<(x)
+(defun startwith<(x) ;determine whether a atom starts with '<'
 	(cond
 		((numberp x) nil)
 		((equal (elt (symbol-name x) 0) #\<) t)
 		(t nil)
 	)
 )
-(defun is-vbl(x)
+(defun is-vbl(x) ;determine whether a atom starts with '?'
 	(cond
 		((numberp x) nil)
 		(t (startwith? x))
 	)
 )
 
-(defun satisfyOne(condition data a)
+(defun satisfyOne(condition data a) ;test whether a given 'condition' is satisfied
 	(let ((var (convertToVbl condition)))
 		(cond 
 			((startwith? condition) (equal (assoc var a) (list var data)))
@@ -63,14 +63,14 @@
 	)
 )
 
-(defun satisfyAll(conds data a) ;conds is a conditions list, a is a-list
+(defun satisfyAll(conds data a) ;test whether all conditions(conds) are satisfied; conds is a conditions list, a is a-list
 	(cond
 		((null conds) t)
 		((satisfyOne (car conds) data a) (satisfyAll (cdr conds) data a))
 		(t nil)
 	)
 )
-(defun rpm(p d a)
+(defun rpm(p d a) ;the real pattern matcher function that does all the heavy lifting
 	(cond
 		((and p d (listp (car p)))	     ; (car p) is a list
 			(cond
