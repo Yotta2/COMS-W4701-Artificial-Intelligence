@@ -26,86 +26,42 @@ int main()
     string inputFilename = "in.txt";
     string outputFilename = "out.txt";
 
-    switch (chooseAgent()) {
+    //switch (chooseAgent()) {
+    for (int i = 1; i <= 5; i++)
+    switch (i) {
     case 1:
         {
             BFSAgent agent(inputFilename, outputFilename);
-            cout << "Searching..." << endl;
-            struct timeval start, end;
-            long mtime, seconds, useconds;
-            gettimeofday(&start, NULL);
+            cout << "BFSearching..." << endl;
             agent.solve();
-            gettimeofday(&end, NULL);
-            seconds  = end.tv_sec  - start.tv_sec;
-            useconds = end.tv_usec - start.tv_usec;
-
-            mtime = ((seconds) * 1000 + useconds/1000.0) + 0.5;
-            cout << "Used time(ms): " << mtime << endl;
             break;
         }
-
     case 2:
         {
             DFSAgent agent(inputFilename, outputFilename);
-            cout << "Searching..." << endl;
-            struct timeval start, end;
-            long mtime, seconds, useconds;
-            gettimeofday(&start, NULL);
+            cout << "DFSearching..." << endl;
             agent.solve();
-            gettimeofday(&end, NULL);
-            seconds  = end.tv_sec  - start.tv_sec;
-            useconds = end.tv_usec - start.tv_usec;
-
-            mtime = ((seconds) * 1000 + useconds/1000.0) + 0.5;
-            cout << "Used time(ms): " << mtime << endl;
             break;
         }
     case 3:
         {
             UCSAgent agent(inputFilename, outputFilename);
-            cout << "Searching..." << endl;
-            struct timeval start, end;
-            long mtime, seconds, useconds;
-            gettimeofday(&start, NULL);
+            cout << "UCSearching..." << endl;
             agent.solve();
-            gettimeofday(&end, NULL);
-            seconds  = end.tv_sec  - start.tv_sec;
-            useconds = end.tv_usec - start.tv_usec;
-
-            mtime = ((seconds) * 1000 + useconds/1000.0) + 0.5;
-            cout << "Used time(ms): " << mtime << endl;
             break;
         }
     case 4:
         {
             GBFSAgent agent(inputFilename, outputFilename);
-            cout << "Searching..." << endl;
-            struct timeval start, end;
-            long mtime, seconds, useconds;
-            gettimeofday(&start, NULL);
+            cout << "GBFSearching..." << endl;
             agent.solve();
-            gettimeofday(&end, NULL);
-            seconds  = end.tv_sec  - start.tv_sec;
-            useconds = end.tv_usec - start.tv_usec;
-
-            mtime = ((seconds) * 1000 + useconds/1000.0) + 0.5;
-            cout << "Used time(ms): " << mtime << endl;
             break;
         }
     case 5:
         {
             ASTARSAgent agent(inputFilename, outputFilename);
-            cout << "Searching..." << endl;
-            struct timeval start, end;
-            long mtime, seconds, useconds;
-            gettimeofday(&start, NULL);
+            cout << "ASTARSearching..." << endl;
             agent.solve();
-            gettimeofday(&end, NULL);
-            seconds  = end.tv_sec  - start.tv_sec;
-            useconds = end.tv_usec - start.tv_usec;
-
-            mtime = ((seconds) * 1000 + useconds/1000.0) + 0.5;
-            cout << "Used time(ms): " << mtime << endl;
             break;
         }
     }

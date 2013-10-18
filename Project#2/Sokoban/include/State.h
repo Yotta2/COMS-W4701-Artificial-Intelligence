@@ -14,10 +14,7 @@ struct State {
     int inGoalCount;                //describe the desirability for GBFS
     char stateType;                   // flag to mark state type, 'U' for UCS, 'G' for GBFS, 'A' for ASTARS
     bool operator==(const State &rhs) const {
-        if (pLoc == rhs.pLoc && boxes == rhs.boxes)
-            return true;
-        else
-            return false;
+        return pLoc == rhs.pLoc && boxes == rhs.boxes;
 //        set<Location>::iterator lItr = boxes.begin();
 //        set<Location>::iterator rItr = rhs.boxes.begin();
 //        while (lItr != boxes.end()) {
