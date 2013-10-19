@@ -5,6 +5,8 @@
 #include <set>
 #include <vector>
 
+using namespace std;
+
 struct State {
     Location pLoc;                      //player's current location
     set<Location> boxes;          //locations of boxes

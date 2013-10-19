@@ -1,4 +1,5 @@
 #include "../include/Timer.h"
+#include <cstddef>
 
 Timer::Timer()
 {
