@@ -67,7 +67,7 @@ void GBFSAgent::solve() {
                 }
             }
             nextState.inGoalCount = getInGoalBoxesNum(nextState);
-            if (nextState == goalState) {
+            if (nextState.boxes == goalState.boxes) {
                 outputSol(nextState);
                 return;
             }

@@ -22,6 +22,7 @@ private:
     bool clockwiseDirIsBlocked(State &state, int lastMoveDir);
     bool counterclockwiseDirIsBlocked(State &state, int lastMoveDir);
     void outputStat();
+    void printState(State &state);
     string inputFilename;
     string outputFilename;
     Puzzle puzzle;

@@ -44,7 +44,7 @@ void DFSAgent::solve() {
 
 void DFSAgent::dfs(State &currState, bool &found) {
     nodesGeneratedCount++;
-    if (currState == goalState) {
+    if (currState.boxes == goalState.boxes) {
         found = true;
         outputSol(currState);
     }

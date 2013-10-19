@@ -44,7 +44,7 @@ void UCSAgent::solve() {
     while (!pQueue.empty()) {
         currState = pQueue.top();
         pQueue.pop();
-        if (currState == goalState) {
+        if (currState.boxes == goalState.boxes) {
             outputSol(currState);
             return;
         }

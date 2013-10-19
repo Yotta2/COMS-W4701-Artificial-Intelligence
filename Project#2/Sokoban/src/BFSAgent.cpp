@@ -19,6 +19,13 @@ BFSAgent::BFSAgent(string in, string out)
     goalState.boxes = puzzle.goals;
 }
 
+void BFSAgent::printState(State &state) {
+    cout << "pLoc: " << state.pLoc.x << "pLoc: " << state.pLoc.y << endl;
+    for (set<Location>::iterator itr = state.boxes.begin();
+        itr != state.boxes.end(); itr++)
+        cout << "box: " << itr->x << " " << itr->y << endl;
+}
+
 void BFSAgent::solve() {
     timer.setStartTime();
     State currState;
@@ -28,6 +35,7 @@ void BFSAgent::solve() {
     nodesGeneratedCount = 0;
     while (!q.empty()) {
         currState = q.front();
+        //printState(currState);
         q.pop();
         for (int i = 0; i < 4; i++) {
             State nextState = currState;
@@ -49,7 +57,7 @@ void BFSAgent::solve() {
                     continue;   //next door is a box, discard state
                 }
             }
-            if (nextState == goalState) {
+            if (nextState.boxes == goalState.boxes) {
                 outputSol(nextState);
                 return;
             }

@@ -75,7 +75,7 @@ void ASTARSAgent::solve() {
                     continue;   //next door is a box, discard state
                 }
             }
-            if (nextState == goalState) {
+            if (nextState.boxes == goalState.boxes) {
                 outputSol(nextState);
                 return;
             }
