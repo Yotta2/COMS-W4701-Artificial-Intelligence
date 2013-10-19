@@ -19,11 +19,14 @@ public:
 private:
     void outputSol(State &state);
     int heuristic(State &state);
+    int betterHeuristic(State &state);
     int computeDist(const Location &loc1, const Location &loc2);
     bool isDeadState(State &state, int lastMoveDir);
+    bool canPushBoxToGoalAgainstWall(State &state, int lastMoveDir);
     bool clockwiseDirIsBlocked(State &state, int lastMoveDir);
     bool counterclockwiseDirIsBlocked(State &state, int lastMoveDir);
     void outputStat();
+    void printState(State &state);
     string inputFilename;
     string outputFilename;
     Puzzle puzzle;

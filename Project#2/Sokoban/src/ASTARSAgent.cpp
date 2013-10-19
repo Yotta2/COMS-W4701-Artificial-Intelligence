@@ -4,6 +4,7 @@
 #include <fstream>
 #include <set>
 #include <cmath>
+#include <climits>
 #include "../include/Location.h"
 
 ASTARSAgent::ASTARSAgent(string in, string out)
@@ -39,13 +40,20 @@ void ASTARSAgent::outputStat() {
     cout << "e) The actual run time(millisecond): " << timer.getTimeElapsed() << endl;
 }
 
+void ASTARSAgent::printState(State &state) {
+    cout << "pLoc: " << state.pLoc.x << "pLoc: " << state.pLoc.y << endl;
+    for (set<Location>::iterator itr = state.boxes.begin();
+        itr != state.boxes.end(); itr++)
+        cout << "box: " << itr->x << " " << itr->y << endl;
+}
+
 void ASTARSAgent::solve() {
     timer.setStartTime();
     State currState;
     currState.pLoc = puzzle.pLoc;
     currState.boxes = puzzle.boxes;
     currState.pathCost = 0;
-    currState.estimatedTotalCost = currState.pathCost + heuristic(currState);
+    currState.estimatedTotalCost = currState.pathCost + betterHeuristic(currState);
     currState.stateType = 'A';
     pQueue.push(currState);
     nodesGeneratedCount = 0;
@@ -57,7 +65,7 @@ void ASTARSAgent::solve() {
             nextState.pLoc.x += delta[i][0];
             nextState.pLoc.y += delta[i][1];
             nextState.pathCost++;
-            nextState.estimatedTotalCost = nextState.pathCost + heuristic(nextState);
+            nextState.estimatedTotalCost = nextState.pathCost + betterHeuristic(nextState);
             nextState.stateType = 'A';
             nextState.prevMoves.push_back(direction[i]);
             if (puzzle.configuration[nextState.pLoc.x][nextState.pLoc.y] == '#')
@@ -69,8 +77,10 @@ void ASTARSAgent::solve() {
                 if (nextState.boxes.find(nextDoor) == nextState.boxes.end()) {
                     nextState.boxes.erase(nextState.pLoc);
                     nextState.boxes.insert(nextDoor);
-                    if (isDeadState(nextState, i))
+                    if (isDeadState(nextState, i)) {
+                        //printState(nextState);
                         continue;   // after pushing a box, enter a dead state, get discarded
+                    }
                 } else {
                     continue;   //next door is a box, discard state
                 }
@@ -99,6 +109,22 @@ int ASTARSAgent::heuristic(State &state) {  // cost from current location to the
     return farthestDist;
 }
 
+int ASTARSAgent::betterHeuristic(State &state) { // sum of distance from every goal location to the nearest box location
+    int sum = 0;
+    for (set<Location>::iterator goalsItr = puzzle.goals.begin();
+        goalsItr != puzzle.goals.end(); goalsItr++) {
+        int nearestDist = INT_MAX;
+        for (set<Location>::iterator boxesItr = state.boxes.begin();
+            boxesItr != state.boxes.end(); boxesItr++) {
+            int dist = computeDist(*goalsItr, *boxesItr);
+            if (dist < nearestDist)
+                nearestDist = dist;
+        }
+        sum += nearestDist;
+    }
+    return sum;
+}
+
 int ASTARSAgent::computeDist(const Location &loc1, const Location &loc2) {
     return abs(loc1.x - loc2.x) + abs(loc1.y - loc2.y);
 }
@@ -108,15 +134,15 @@ bool ASTARSAgent::clockwiseDirIsBlocked(State &state, int lastMoveDir) {
     int clockwiseDir = (lastMoveDir + 1) % 4;
 
     Location loc0(state.pLoc.x + delta[lastMoveDir][0] * 2,
-                      state.pLoc.y + delta[lastMoveDir][1] * 2);
+                  state.pLoc.y + delta[lastMoveDir][1] * 2);
     Location loc1(state.pLoc.x + delta[lastMoveDir][0] + delta[clockwiseDir][0],
                   state.pLoc.y + delta[lastMoveDir][1] + delta[clockwiseDir][1]);
     while (true) {
-        if (puzzle.configuration[loc0.x][loc0.y] != '#'
-            && state.boxes.find(loc0) == state.boxes.end())
+        if (puzzle.configuration[loc0.x][loc0.y] != '#')
+            //&& state.boxes.find(loc0) == state.boxes.end())
                 break;
-        if (puzzle.configuration[loc1.x][loc1.y] == '#'
-            || state.boxes.find(loc1) != state.boxes.end())
+        if (puzzle.configuration[loc1.x][loc1.y] == '#')
+            //|| state.boxes.find(loc1) != state.boxes.end())
             return true;
         loc0.x += delta[clockwiseDir][0];
         loc0.y += delta[clockwiseDir][1];
@@ -131,15 +157,15 @@ bool ASTARSAgent::counterclockwiseDirIsBlocked(State &state, int lastMoveDir) {
     int counterclockwiseDir = (lastMoveDir - 1 + 4) % 4;
 
     Location loc0(state.pLoc.x + delta[lastMoveDir][0] * 2,
-                      state.pLoc.y + delta[lastMoveDir][1] * 2);
+                  state.pLoc.y + delta[lastMoveDir][1] * 2);
     Location loc1(state.pLoc.x + delta[lastMoveDir][0] + delta[counterclockwiseDir][0],
                   state.pLoc.y + delta[lastMoveDir][1] + delta[counterclockwiseDir][1]);
     while (true) {
-        if (puzzle.configuration[loc0.x][loc0.y] != '#'
-            && state.boxes.find(loc0) == state.boxes.end())
+        if (puzzle.configuration[loc0.x][loc0.y] != '#')
+            //&& state.boxes.find(loc0) == state.boxes.end())
                 break;
-        if (puzzle.configuration[loc1.x][loc1.y] == '#'
-            || state.boxes.find(loc1) != state.boxes.end())
+        if (puzzle.configuration[loc1.x][loc1.y] == '#')
+            //|| state.boxes.find(loc1) != state.boxes.end())
                 return true;
         loc0.x += delta[counterclockwiseDir][0];
         loc0.y += delta[counterclockwiseDir][1];
@@ -149,7 +175,56 @@ bool ASTARSAgent::counterclockwiseDirIsBlocked(State &state, int lastMoveDir) {
     return false;
 }
 
+bool ASTARSAgent::canPushBoxToGoalAgainstWall(State &state, int lastMoveDir) {
+    int clockwiseDir = (lastMoveDir + 1) % 4;
+    int counterclockwiseDir = (lastMoveDir - 1 + 4) % 4;
+
+    // try push the box in clockwise direction
+    Location pLoc0(state.pLoc.x + delta[lastMoveDir][0] + delta[counterclockwiseDir][0],
+                   state.pLoc.y + delta[lastMoveDir][1] + delta[counterclockwiseDir][1]);
+    if (puzzle.configuration[pLoc0.x][pLoc0.y] != '#'
+        && state.boxes.find(pLoc0) == state.boxes.end()) { // possible to go required location to push the box
+        Location boxLoc(state.pLoc.x + delta[lastMoveDir][0],
+                        state.pLoc.y + delta[lastMoveDir][1]);
+        while (true) {
+            if (puzzle.goals.find(boxLoc) != puzzle.goals.end())
+                return true;
+            boxLoc.x += delta[clockwiseDir][0];
+            boxLoc.y += delta[clockwiseDir][1];
+            if (puzzle.configuration[boxLoc.x][boxLoc.y] == '#'
+                || state.boxes.find(boxLoc) != state.boxes.end())
+                    break;
+        }
+    }
+
+    // try push the box in counterclockwise direction
+    Location pLoc1(state.pLoc.x + delta[lastMoveDir][0] + delta[clockwiseDir][0],
+                   state.pLoc.y + delta[lastMoveDir][1] + delta[clockwiseDir][1]);
+    if (puzzle.configuration[pLoc1.x][pLoc1.y] != '#'
+        && state.boxes.find(pLoc1) == state.boxes.end()) { // possible to go required location to push the box
+        Location boxLoc(state.pLoc.x + delta[lastMoveDir][0],
+                        state.pLoc.y + delta[lastMoveDir][1]);
+        while (true) {
+            if (puzzle.goals.find(boxLoc) != puzzle.goals.end())
+                return true;
+            boxLoc.x += delta[counterclockwiseDir][0];
+            boxLoc.y += delta[counterclockwiseDir][1];
+            if (puzzle.configuration[boxLoc.x][boxLoc.y] == '#'
+                || state.boxes.find(boxLoc) != state.boxes.end())
+                    break;
+        }
+    }
+
+    return false;
+}
+
 bool ASTARSAgent::isDeadState(State &state, int lastMoveDir) {
+    if (canPushBoxToGoalAgainstWall(state, lastMoveDir))
+        return false;
+//    Location boxLoc(state.pLoc.x + delta[lastMoveDir][0],
+//                    state.pLoc.y + delta[lastMoveDir][1]);
+//    if (puzzle.goals.find(boxLoc) != puzzle.goals.end())
+//        return false;
     return clockwiseDirIsBlocked(state, lastMoveDir)
         && counterclockwiseDirIsBlocked(state, lastMoveDir);
 }

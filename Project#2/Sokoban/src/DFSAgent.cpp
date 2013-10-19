@@ -64,8 +64,8 @@ void DFSAgent::dfs(State &currState, bool &found) {
             if (nextState.boxes.find(nextDoor) == nextState.boxes.end()) {
                 nextState.boxes.erase(nextState.pLoc);
                 nextState.boxes.insert(nextDoor);
-                if (isDeadState(nextState, i))
-                        continue;   // after pushing a box, enter a dead state, get discarded
+                //if (isDeadState(nextState, i))
+                //        continue;   // after pushing a box, enter a dead state, get discarded
             } else {
                 continue;   //next door is a box, discard state
             }
@@ -82,15 +82,15 @@ bool DFSAgent::clockwiseDirIsBlocked(State &state, int lastMoveDir) {
     int clockwiseDir = (lastMoveDir + 1) % 4;
 
     Location loc0(state.pLoc.x + delta[lastMoveDir][0] * 2,
-                      state.pLoc.y + delta[lastMoveDir][1] * 2);
+                  state.pLoc.y + delta[lastMoveDir][1] * 2);
     Location loc1(state.pLoc.x + delta[lastMoveDir][0] + delta[clockwiseDir][0],
                   state.pLoc.y + delta[lastMoveDir][1] + delta[clockwiseDir][1]);
     while (true) {
-        if (puzzle.configuration[loc0.x][loc0.y] != '#'
-            && state.boxes.find(loc0) == state.boxes.end())
+        if (puzzle.configuration[loc0.x][loc0.y] != '#')
+            //&& state.boxes.find(loc0) == state.boxes.end())
                 break;
-        if (puzzle.configuration[loc1.x][loc1.y] == '#'
-            || state.boxes.find(loc1) != state.boxes.end())
+        if (puzzle.configuration[loc1.x][loc1.y] == '#')
+            //|| state.boxes.find(loc1) != state.boxes.end())
             return true;
         loc0.x += delta[clockwiseDir][0];
         loc0.y += delta[clockwiseDir][1];
@@ -105,15 +105,15 @@ bool DFSAgent::counterclockwiseDirIsBlocked(State &state, int lastMoveDir) {
     int counterclockwiseDir = (lastMoveDir - 1 + 4) % 4;
 
     Location loc0(state.pLoc.x + delta[lastMoveDir][0] * 2,
-                      state.pLoc.y + delta[lastMoveDir][1] * 2);
+                  state.pLoc.y + delta[lastMoveDir][1] * 2);
     Location loc1(state.pLoc.x + delta[lastMoveDir][0] + delta[counterclockwiseDir][0],
                   state.pLoc.y + delta[lastMoveDir][1] + delta[counterclockwiseDir][1]);
     while (true) {
-        if (puzzle.configuration[loc0.x][loc0.y] != '#'
-            && state.boxes.find(loc0) == state.boxes.end())
+        if (puzzle.configuration[loc0.x][loc0.y] != '#')
+            //&& state.boxes.find(loc0) == state.boxes.end())
                 break;
-        if (puzzle.configuration[loc1.x][loc1.y] == '#'
-            || state.boxes.find(loc1) != state.boxes.end())
+        if (puzzle.configuration[loc1.x][loc1.y] == '#')
+            //|| state.boxes.find(loc1) != state.boxes.end())
                 return true;
         loc0.x += delta[counterclockwiseDir][0];
         loc0.y += delta[counterclockwiseDir][1];
@@ -123,7 +123,56 @@ bool DFSAgent::counterclockwiseDirIsBlocked(State &state, int lastMoveDir) {
     return false;
 }
 
+bool DFSAgent::canPushBoxToGoalAgainstWall(State &state, int lastMoveDir) {
+    int clockwiseDir = (lastMoveDir + 1) % 4;
+    int counterclockwiseDir = (lastMoveDir - 1 + 4) % 4;
+
+    // try push the box in clockwise direction
+    Location pLoc0(state.pLoc.x + delta[lastMoveDir][0] + delta[counterclockwiseDir][0],
+                   state.pLoc.y + delta[lastMoveDir][1] + delta[counterclockwiseDir][1]);
+    if (puzzle.configuration[pLoc0.x][pLoc0.y] != '#'
+        && state.boxes.find(pLoc0) == state.boxes.end()) { // possible to go required location to push the box
+        Location boxLoc(state.pLoc.x + delta[lastMoveDir][0],
+                        state.pLoc.y + delta[lastMoveDir][1]);
+        while (true) {
+            if (puzzle.goals.find(boxLoc) != puzzle.goals.end())
+                return true;
+            boxLoc.x += delta[clockwiseDir][0];
+            boxLoc.y += delta[clockwiseDir][1];
+            if (puzzle.configuration[boxLoc.x][boxLoc.y] == '#'
+                || state.boxes.find(boxLoc) != state.boxes.end())
+                    break;
+        }
+    }
+
+    // try push the box in counterclockwise direction
+    Location pLoc1(state.pLoc.x + delta[lastMoveDir][0] + delta[clockwiseDir][0],
+                   state.pLoc.y + delta[lastMoveDir][1] + delta[clockwiseDir][1]);
+    if (puzzle.configuration[pLoc1.x][pLoc1.y] != '#'
+        && state.boxes.find(pLoc1) == state.boxes.end()) { // possible to go required location to push the box
+        Location boxLoc(state.pLoc.x + delta[lastMoveDir][0],
+                        state.pLoc.y + delta[lastMoveDir][1]);
+        while (true) {
+            if (puzzle.goals.find(boxLoc) != puzzle.goals.end())
+                return true;
+            boxLoc.x += delta[counterclockwiseDir][0];
+            boxLoc.y += delta[counterclockwiseDir][1];
+            if (puzzle.configuration[boxLoc.x][boxLoc.y] == '#'
+                || state.boxes.find(boxLoc) != state.boxes.end())
+                    break;
+        }
+    }
+
+    return false;
+}
+
 bool DFSAgent::isDeadState(State &state, int lastMoveDir) {
+    if (canPushBoxToGoalAgainstWall(state, lastMoveDir))
+        return false;
+//    Location boxLoc(state.pLoc.x + delta[lastMoveDir][0],
+//                    state.pLoc.y + delta[lastMoveDir][1]);
+//    if (puzzle.goals.find(boxLoc) != puzzle.goals.end())
+//        return false;
     return clockwiseDirIsBlocked(state, lastMoveDir)
         && counterclockwiseDirIsBlocked(state, lastMoveDir);
 }

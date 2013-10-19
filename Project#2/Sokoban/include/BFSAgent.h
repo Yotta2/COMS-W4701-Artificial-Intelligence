@@ -19,6 +19,7 @@ public:
 private:
     void outputSol(State &state);
     bool isDeadState(State &state, int lastMoveDir);
+    bool canPushBoxToGoalAgainstWall(State &state, int lastMoveDir);
     bool clockwiseDirIsBlocked(State &state, int lastMoveDir);
     bool counterclockwiseDirIsBlocked(State &state, int lastMoveDir);
     void outputStat();

@@ -49,10 +49,13 @@ class StateKeyHash
 public:
     size_t operator () (const State &state) const {
         Location pLoc = state.pLoc;
-        size_t hashcode = (hash<int>()(pLoc.x)) ^ (hash<int>()(pLoc.y));
+        size_t hashcode = (hash<int>()(pLoc.x)) ^ ((hash<int>()(pLoc.y)) << 1);
         for (set<Location>::iterator itr = state.boxes.begin();
-                itr != state.boxes.end(); itr++)
-            hashcode ^= (hash<int>()(itr->x)) ^ (hash<int>()(itr->y));
+                itr != state.boxes.end(); itr++) {
+            hashcode ^= (hash<int>()(itr->x)) ^ ((hash<int>()(itr->y)) << 1);
+            hashcode <<= 1;
+        }
+
         return hashcode;
     }
 };
