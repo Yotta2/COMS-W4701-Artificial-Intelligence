@@ -14,7 +14,7 @@ using namespace std;
 class BFSAgent
 {
 public:
-    BFSAgent(string in, string out);
+    BFSAgent(string in, string out, bool statFlag);
     void solve();
 private:
     void outputSol(State &state);

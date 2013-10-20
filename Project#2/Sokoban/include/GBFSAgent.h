@@ -14,11 +14,13 @@ using namespace std;
 class GBFSAgent
 {
 public:
-    GBFSAgent(string in, string out);
+    GBFSAgent(string in, string out, bool statFlag);
     void solve();
 private:
     void outputSol(State &state);
     int getInGoalBoxesNum(State &state);
+    int betterHeuristic(State &state);
+    int computeDist(const Location &loc1, const Location &loc2);
     bool isDeadState(State &state, int lastMoveDir);
     bool canPushBoxToGoalAgainstWall(State &state, int lastMoveDir);
     bool clockwiseDirIsBlocked(State &state, int lastMoveDir);
@@ -35,6 +37,7 @@ private:
     Timer timer;
     int nodesGeneratedCount;
     int repeatedNodesCount;
+    bool needStat;
 };
 
 #endif // GBFSAGENT_H

@@ -13,7 +13,7 @@ using namespace std;
 class DFSAgent
 {
 public:
-    DFSAgent(string in, string out);
+    DFSAgent(string in, string out, bool statFlag);
     void solve();
 private:
     void outputSol(State &state);
@@ -33,6 +33,7 @@ private:
     Timer timer;
     int nodesGeneratedCount;
     int repeatedNodesCount;
+    bool needStat;
 };
 
 #endif // DFSAGENT_H

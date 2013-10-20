@@ -5,7 +5,7 @@
 #include <set>
 #include "../include/Location.h"
 
-UCSAgent::UCSAgent(string in, string out)
+UCSAgent::UCSAgent(string in, string out, bool statFlag)
 {
     //ctor
     inputFilename = in;
@@ -13,18 +13,21 @@ UCSAgent::UCSAgent(string in, string out)
     puzzle = PuzzleParser::parse(inputFilename);
     goalState.pLoc = puzzle.pLoc;
     goalState.boxes = puzzle.goals;
+    needStat = statFlag;
 }
 
 int UCSAgent::delta[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
 char UCSAgent::direction[4] = {'u', 'r', 'd', 'l'};
 
 void UCSAgent::outputSol(State &state) {
+    cout << "Search finished." << endl;
     ofstream ofs(outputFilename.c_str());
     ofs << "Solution:" << endl;
     for (int i = 0; i < state.prevMoves.size(); i++)
         ofs << state.prevMoves[i] << ",";
     timer.setEndTime();
-    outputStat();
+    if (needStat)
+        outputStat();
 }
 
 void UCSAgent::outputStat() {
@@ -70,8 +73,8 @@ void UCSAgent::solve() {
                     nextState.boxes.erase(nextState.pLoc);
                     nextState.boxes.insert(nextDoor);
                     nextState.pathCost++;   //push a box, cost == 2
-                    //if (isDeadState(nextState, i))
-                    //    continue;   // after pushing a box, enter a dead state, get discarded
+                    if (isDeadState(nextState, i))
+                        continue;   // after pushing a box, enter a dead state, get discarded
                 } else {
                     continue;   //next door is a box, discard state
                 }

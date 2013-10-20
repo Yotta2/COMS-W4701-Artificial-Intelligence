@@ -21,10 +21,40 @@ int chooseAgent() {
     return choice;
 }
 
+string specifyInputFile() {
+    string inputFilename = "in.txt";
+    char ans;
+    cout << "Do you want to specify the input filename\n(the default one is \"in.txt\")? (y/n): ";
+    cin >> ans;
+    if (ans == 'y')
+        cin >> inputFilename;
+    return inputFilename;
+}
+
+string specifyOutputFile() {
+    string outputFilename = "out.txt";
+    char ans;
+    cout << "Do you want to specify the output filename\n(the default one is \"out.txt\")? (y/n): ";
+    cin >> ans;
+    if (ans == 'y')
+        cin >> outputFilename;
+    return outputFilename;
+}
+
 int main()
 {
     string inputFilename = "in.txt";
     string outputFilename = "out.txt";
+    bool needStat;
+    char choice = true;
+    cout << "Welcome to Sokoban!..." << endl;
+    inputFilename = specifyInputFile();
+    outputFilename = specifyOutputFile();
+
+    //Ask the user if he/she wants the statistics
+    cout << "Do you want the search statistics? (y/n): ";
+    cin >> choice;
+    needStat = (choice == 'y');
 
     switch (chooseAgent()) {
     //for (int i = 1; i <= 5; i++)
@@ -32,35 +62,35 @@ int main()
     //switch (i) {
     case 1:
         {
-            BFSAgent agent(inputFilename, outputFilename);
+            BFSAgent agent(inputFilename, outputFilename, needStat);
             cout << "BFSearching..." << endl;
             agent.solve();
             break;
         }
     case 2:
         {
-            DFSAgent agent(inputFilename, outputFilename);
+            DFSAgent agent(inputFilename, outputFilename, needStat);
             cout << "DFSearching..." << endl;
             agent.solve();
             break;
         }
     case 3:
         {
-            UCSAgent agent(inputFilename, outputFilename);
+            UCSAgent agent(inputFilename, outputFilename, needStat);
             cout << "UCSearching..." << endl;
             agent.solve();
             break;
         }
     case 4:
         {
-            GBFSAgent agent(inputFilename, outputFilename);
+            GBFSAgent agent(inputFilename, outputFilename, needStat);
             cout << "GBFSearching..." << endl;
             agent.solve();
             break;
         }
     case 5:
         {
-            ASTARSAgent agent(inputFilename, outputFilename);
+            ASTARSAgent agent(inputFilename, outputFilename, needStat);
             cout << "ASTARSearching..." << endl;
             agent.solve();
             break;

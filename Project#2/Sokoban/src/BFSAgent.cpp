@@ -5,7 +5,7 @@
 #include <set>
 #include "../include/Location.h"
 
-BFSAgent::BFSAgent(string in, string out)
+BFSAgent::BFSAgent(string in, string out, bool statFlag)
 {
     //ctor
     inputFilename = in;
@@ -17,6 +17,7 @@ BFSAgent::BFSAgent(string in, string out)
 //        cout << itr->x << " " << itr->y << endl;
     goalState.pLoc = puzzle.pLoc;
     goalState.boxes = puzzle.goals;
+    needStat = statFlag;
 }
 
 int BFSAgent::delta[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
@@ -77,12 +78,14 @@ void BFSAgent::solve() {
 }
 
 void BFSAgent::outputSol(State &state) {
+    cout << "Search finished." << endl;
     ofstream ofs(outputFilename.c_str());
     ofs << "Solution:" << endl;
     for (int i = 0; i < state.prevMoves.size(); i++)
         ofs << state.prevMoves[i] << ",";
     timer.setEndTime();
-    outputStat();
+    if (needStat)
+        outputStat();
 }
 
 void BFSAgent::outputStat() {

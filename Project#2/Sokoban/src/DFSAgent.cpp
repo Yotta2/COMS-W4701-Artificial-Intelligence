@@ -5,7 +5,7 @@
 #include <set>
 #include "../include/Location.h"
 
-DFSAgent::DFSAgent(string in, string out)
+DFSAgent::DFSAgent(string in, string out, bool statFlag)
 {
     //ctor
     inputFilename = in;
@@ -13,18 +13,21 @@ DFSAgent::DFSAgent(string in, string out)
     puzzle = PuzzleParser::parse(inputFilename);
     goalState.pLoc = puzzle.pLoc;
     goalState.boxes = puzzle.goals;
+    needStat = statFlag;
 }
 
 int DFSAgent::delta[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
 char DFSAgent::direction[4] = {'u', 'r', 'd', 'l'};
 
 void DFSAgent::outputSol(State &state) {
+    cout << "Search finished." << endl;
     ofstream ofs(outputFilename.c_str());
     ofs << "Solution:" << endl;
     for (int i = 0; i < state.prevMoves.size(); i++)
         ofs << state.prevMoves[i] << ",";
     timer.setEndTime();
-    outputStat();
+    if (needStat)
+        outputStat();
 }
 
 void DFSAgent::outputStat() {
@@ -68,8 +71,8 @@ void DFSAgent::dfs(State &currState, bool &found) {
             if (nextState.boxes.find(nextDoor) == nextState.boxes.end()) {
                 nextState.boxes.erase(nextState.pLoc);
                 nextState.boxes.insert(nextDoor);
-                //if (isDeadState(nextState, i))
-                //        continue;   // after pushing a box, enter a dead state, get discarded
+                if (isDeadState(nextState, i))
+                    continue;   // after pushing a box, enter a dead state, get discarded
             } else {
                 continue;   //next door is a box, discard state
             }

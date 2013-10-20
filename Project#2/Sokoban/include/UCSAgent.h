@@ -14,7 +14,7 @@ using namespace std;
 class UCSAgent
 {
 public:
-    UCSAgent(string in, string out);
+    UCSAgent(string in, string out, bool statFlag);
     void solve();
 private:
     void outputSol(State &state);
@@ -34,6 +34,7 @@ private:
     Timer timer;
     int nodesGeneratedCount;
     int repeatedNodesCount;
+    bool needStat;
 };
 
 #endif // UCSAGENT_H

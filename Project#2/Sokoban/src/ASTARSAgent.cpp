@@ -7,7 +7,7 @@
 #include <climits>
 #include "../include/Location.h"
 
-ASTARSAgent::ASTARSAgent(string in, string out)
+ASTARSAgent::ASTARSAgent(string in, string out, bool statFlag)
 {
     //ctor
     inputFilename = in;
@@ -15,6 +15,7 @@ ASTARSAgent::ASTARSAgent(string in, string out)
     puzzle = PuzzleParser::parse(inputFilename);
     goalState.pLoc = puzzle.pLoc;
     goalState.boxes = puzzle.goals;
+    needStat = statFlag;
 }
 
 int ASTARSAgent::delta[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
@@ -27,12 +28,14 @@ char ASTARSAgent::direction[4] = {'u', 'r', 'd', 'l'};
 //	 d) the number of nodes on the explored list (if there is one) when termination occurs
 //	 e) the actual run time of the algorithm, expressed in actual time units
 void ASTARSAgent::outputSol(State &state) {
+    cout << "Search finished." << endl;
     ofstream ofs(outputFilename.c_str());
     ofs << "Solution:" << endl;
     for (int i = 0; i < state.prevMoves.size(); i++)
         ofs << state.prevMoves[i] << ",";
     timer.setEndTime();
-    outputStat();
+    if (needStat)
+        outputStat();
 }
 
 void ASTARSAgent::outputStat() {

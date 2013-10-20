@@ -14,7 +14,7 @@ using namespace std;
 class ASTARSAgent
 {
 public:
-    ASTARSAgent(string in, string out);
+    ASTARSAgent(string in, string out, bool statFlag);
     void solve();
 private:
     void outputSol(State &state);
@@ -38,6 +38,7 @@ private:
     int nodesGeneratedCount;
     int repeatedNodesCount;
     Timer timer;
+    bool needStat;
 };
 
 #endif // ASTARSAGENT_H

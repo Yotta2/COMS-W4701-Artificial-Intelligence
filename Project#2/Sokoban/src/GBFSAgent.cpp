@@ -3,9 +3,11 @@
 #include <iostream>
 #include <fstream>
 #include <set>
+#include <cmath>
+#include <climits>
 #include "../include/Location.h"
 
-GBFSAgent::GBFSAgent(string in, string out)
+GBFSAgent::GBFSAgent(string in, string out, bool statFlag)
 {
     //ctor
     inputFilename = in;
@@ -13,18 +15,21 @@ GBFSAgent::GBFSAgent(string in, string out)
     puzzle = PuzzleParser::parse(inputFilename);
     goalState.pLoc = puzzle.pLoc;
     goalState.boxes = puzzle.goals;
+    needStat = statFlag;
 }
 
 int GBFSAgent::delta[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
 char GBFSAgent::direction[4] = {'u', 'r', 'd', 'l'};
 
 void GBFSAgent::outputSol(State &state) {
+    cout << "Search finished." << endl;
     ofstream ofs(outputFilename.c_str());
     ofs << "Solution:" << endl;
     for (int i = 0; i < state.prevMoves.size(); i++)
         ofs << state.prevMoves[i] << ",";
     timer.setEndTime();
-    outputStat();
+    if (needStat)
+        outputStat();
 }
 
 void GBFSAgent::outputStat() {
@@ -41,7 +46,7 @@ void GBFSAgent::solve() {
     currState.pLoc = puzzle.pLoc;
     currState.boxes = puzzle.boxes;
     currState.stateType = 'G';
-    currState.inGoalCount = getInGoalBoxesNum(currState);
+    currState.estimatedRemainingCost = betterHeuristic(currState);
     pQueue.push(currState);
     nodesGeneratedCount = 0;
     repeatedNodesCount = 0;
@@ -65,13 +70,13 @@ void GBFSAgent::solve() {
                     nextState.boxes.erase(nextState.pLoc);
                     nextState.boxes.insert(nextDoor);
                     nextState.pathCost++;   //push a box, cost == 2
-                    //if (isDeadState(nextState, i))
-                    //    continue;   // after pushing a box, enter a dead state, get discarded
+                    if (isDeadState(nextState, i))
+                        continue;   // after pushing a box, enter a dead state, get discarded
                 } else {
                     continue;   //next door is a box, discard state
                 }
             }
-            nextState.inGoalCount = getInGoalBoxesNum(nextState);
+            nextState.estimatedRemainingCost = betterHeuristic(currState);
             if (nextState.boxes == goalState.boxes) {
                 outputSol(nextState);
                 return;
@@ -92,6 +97,26 @@ int GBFSAgent::getInGoalBoxesNum(State &state) {
         if (puzzle.goals.find(*itr) != puzzle.goals.end())
         count++;
     return count;
+}
+
+int GBFSAgent::betterHeuristic(State &state) { // sum of distance from every goal location to the nearest box location
+    int sum = 0;
+    for (set<Location>::iterator goalsItr = puzzle.goals.begin();
+        goalsItr != puzzle.goals.end(); goalsItr++) {
+        int nearestDist = INT_MAX;
+        for (set<Location>::iterator boxesItr = state.boxes.begin();
+            boxesItr != state.boxes.end(); boxesItr++) {
+            int dist = computeDist(*goalsItr, *boxesItr);
+            if (dist < nearestDist)
+                nearestDist = dist;
+        }
+        sum += nearestDist;
+    }
+    return sum;
+}
+
+int GBFSAgent::computeDist(const Location &loc1, const Location &loc2) {
+    return abs(loc1.x - loc2.x) + abs(loc1.y - loc2.y);
 }
 
 // lastMoveDir and clockwiseDir has wall or box
