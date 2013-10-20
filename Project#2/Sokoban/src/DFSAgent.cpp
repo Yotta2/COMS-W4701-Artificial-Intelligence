@@ -15,6 +15,9 @@ DFSAgent::DFSAgent(string in, string out)
     goalState.boxes = puzzle.goals;
 }
 
+int DFSAgent::delta[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+char DFSAgent::direction[4] = {'u', 'r', 'd', 'l'};
+
 void DFSAgent::outputSol(State &state) {
     ofstream ofs(outputFilename.c_str());
     ofs << "Solution:" << endl;

@@ -19,6 +19,9 @@ BFSAgent::BFSAgent(string in, string out)
     goalState.boxes = puzzle.goals;
 }
 
+int BFSAgent::delta[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+char BFSAgent::direction[4] = {'u', 'r', 'd', 'l'};
+
 void BFSAgent::printState(State &state) {
     cout << "pLoc: " << state.pLoc.x << "pLoc: " << state.pLoc.y << endl;
     for (set<Location>::iterator itr = state.boxes.begin();

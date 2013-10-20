@@ -26,10 +26,10 @@ int main()
     string inputFilename = "in.txt";
     string outputFilename = "out.txt";
 
-    //switch (chooseAgent()) {
-    for (int i = 1; i <= 5; i++)
+    switch (chooseAgent()) {
+    //for (int i = 1; i <= 5; i++)
     //if (i != 2)
-    switch (i) {
+    //switch (i) {
     case 1:
         {
             BFSAgent agent(inputFilename, outputFilename);

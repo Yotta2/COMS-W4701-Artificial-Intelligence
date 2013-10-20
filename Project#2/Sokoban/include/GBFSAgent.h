@@ -30,8 +30,8 @@ private:
     State goalState;
     unordered_set<State, StateKeyHash, StateKeyEqual> visitedStates;
     priority_queue<State, vector<State>, greater<State> > pQueue;
-    int delta[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
-    char direction[4] = {'u', 'r', 'd', 'l'};
+    static int delta[4][2];// = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+    static char direction[4];// = {'u', 'r', 'd', 'l'};
     Timer timer;
     int nodesGeneratedCount;
     int repeatedNodesCount;

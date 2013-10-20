@@ -17,6 +17,9 @@ ASTARSAgent::ASTARSAgent(string in, string out)
     goalState.boxes = puzzle.goals;
 }
 
+int ASTARSAgent::delta[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+char ASTARSAgent::direction[4] = {'u', 'r', 'd', 'l'};
+
 //-Your program should also provide users with an option to output statistics on the search process, namely:
 //	 a) the number of nodes generated
 //	 b) the number of nodes containing states that were generated previously

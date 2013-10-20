@@ -15,6 +15,9 @@ UCSAgent::UCSAgent(string in, string out)
     goalState.boxes = puzzle.goals;
 }
 
+int UCSAgent::delta[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+char UCSAgent::direction[4] = {'u', 'r', 'd', 'l'};
+
 void UCSAgent::outputSol(State &state) {
     ofstream ofs(outputFilename.c_str());
     ofs << "Solution:" << endl;

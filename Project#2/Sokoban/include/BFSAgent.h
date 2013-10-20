@@ -30,8 +30,8 @@ private:
     State goalState;
     queue<State> q;
     unordered_set<State, StateKeyHash, StateKeyEqual> visitedStates;
-    int delta[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
-    char direction[4] = {'u', 'r', 'd', 'l'};
+    static int delta[4][2];// = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+    static char direction[4];// = {'u', 'r', 'd', 'l'};
     Timer timer;
     int nodesGeneratedCount;
     int repeatedNodesCount;

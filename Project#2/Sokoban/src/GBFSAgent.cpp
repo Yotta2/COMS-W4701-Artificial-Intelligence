@@ -15,6 +15,9 @@ GBFSAgent::GBFSAgent(string in, string out)
     goalState.boxes = puzzle.goals;
 }
 
+int GBFSAgent::delta[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+char GBFSAgent::direction[4] = {'u', 'r', 'd', 'l'};
+
 void GBFSAgent::outputSol(State &state) {
     ofstream ofs(outputFilename.c_str());
     ofs << "Solution:" << endl;
