@@ -33,6 +33,7 @@ private:
     char direction[4] = {'u', 'r', 'd', 'l'};
     Timer timer;
     int nodesGeneratedCount;
+    int repeatedNodesCount;
 };
 
 #endif // UCSAGENT_H

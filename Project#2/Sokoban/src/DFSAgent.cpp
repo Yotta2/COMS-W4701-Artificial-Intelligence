@@ -26,7 +26,7 @@ void DFSAgent::outputSol(State &state) {
 
 void DFSAgent::outputStat() {
     cout << "a) The number of nodes generated: " << nodesGeneratedCount << endl;
-    cout << "b) The number of nodes containing states that were generated previously: " << endl;
+    cout << "b) The number of nodes containing states that were generated previously: " << repeatedNodesCount << endl;
     cout << "c) The number of nodes on the fringe when termination occurs: " << 0 << endl;
     cout << "d) The number of nodes on the explored list (if there is one) when termination occurs: " << visitedStates.size() << endl;
     cout << "e) The actual run time(millisecond): " << timer.getTimeElapsed() << endl;
@@ -39,11 +39,11 @@ void DFSAgent::solve() {
     currState.pLoc = puzzle.pLoc;
     currState.boxes = puzzle.boxes;
     nodesGeneratedCount = 0;
+    repeatedNodesCount = 0;
     dfs(currState, found);
 }
 
 void DFSAgent::dfs(State &currState, bool &found) {
-    nodesGeneratedCount++;
     if (currState.boxes == goalState.boxes) {
         found = true;
         outputSol(currState);
@@ -51,6 +51,7 @@ void DFSAgent::dfs(State &currState, bool &found) {
     if (found)
         return;
     for (int i = 0; i < 4; i++) {
+        nodesGeneratedCount++;
         State nextState = currState;
         nextState.pLoc.x += delta[i][0];
         nextState.pLoc.y += delta[i][1];
@@ -73,6 +74,8 @@ void DFSAgent::dfs(State &currState, bool &found) {
         if (visitedStates.find(nextState) == visitedStates.end()) {
             visitedStates.insert(nextState);
             dfs(nextState, found);
+        } else {
+            repeatedNodesCount++;
         }
     }
 }

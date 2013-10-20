@@ -36,6 +36,7 @@ private:
     int delta[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
     char direction[4] = {'u', 'r', 'd', 'l'};
     int nodesGeneratedCount;
+    int repeatedNodesCount;
     Timer timer;
 };
 

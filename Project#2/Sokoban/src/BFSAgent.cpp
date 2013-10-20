@@ -33,11 +33,13 @@ void BFSAgent::solve() {
     currState.boxes = puzzle.boxes;
     q.push(currState);
     nodesGeneratedCount = 0;
+    repeatedNodesCount = 0;
     while (!q.empty()) {
         currState = q.front();
         //printState(currState);
         q.pop();
         for (int i = 0; i < 4; i++) {
+            nodesGeneratedCount++;
             State nextState = currState;
             nextState.pLoc.x += delta[i][0];
             nextState.pLoc.y += delta[i][1];
@@ -64,7 +66,8 @@ void BFSAgent::solve() {
             if (visitedStates.find(nextState) == visitedStates.end()) {
                 visitedStates.insert(nextState);
                 q.push(nextState);
-                nodesGeneratedCount++;
+            } else {
+                repeatedNodesCount++;
             }
         }
     }
@@ -81,7 +84,7 @@ void BFSAgent::outputSol(State &state) {
 
 void BFSAgent::outputStat() {
     cout << "a) The number of nodes generated: " << nodesGeneratedCount << endl;
-    cout << "b) The number of nodes containing states that were generated previously: " << endl;
+    cout << "b) The number of nodes containing states that were generated previously: " << repeatedNodesCount << endl;
     cout << "c) The number of nodes on the fringe when termination occurs: " << q.size() << endl;
     cout << "d) The number of nodes on the explored list (if there is one) when termination occurs: " << visitedStates.size() << endl;
     cout << "e) The actual run time(millisecond): " << timer.getTimeElapsed() << endl;

@@ -34,7 +34,7 @@ void ASTARSAgent::outputSol(State &state) {
 
 void ASTARSAgent::outputStat() {
     cout << "a) The number of nodes generated: " << nodesGeneratedCount << endl;
-    cout << "b) The number of nodes containing states that were generated previously: " << endl;
+    cout << "b) The number of nodes containing states that were generated previously: " << repeatedNodesCount << endl;
     cout << "c) The number of nodes on the fringe when termination occurs: " << pQueue.size() << endl;
     cout << "d) The number of nodes on the explored list (if there is one) when termination occurs: " << visitedStates.size() << endl;
     cout << "e) The actual run time(millisecond): " << timer.getTimeElapsed() << endl;
@@ -57,10 +57,12 @@ void ASTARSAgent::solve() {
     currState.stateType = 'A';
     pQueue.push(currState);
     nodesGeneratedCount = 0;
+    repeatedNodesCount = 0;
     while (!pQueue.empty()) {
         currState = pQueue.top();
         pQueue.pop();
         for (int i = 0; i < 4; i++) {
+            nodesGeneratedCount++;
             State nextState = currState;
             nextState.pLoc.x += delta[i][0];
             nextState.pLoc.y += delta[i][1];
@@ -92,7 +94,8 @@ void ASTARSAgent::solve() {
             if (visitedStates.find(nextState) == visitedStates.end()) {
                 visitedStates.insert(nextState);
                 pQueue.push(nextState);
-                nodesGeneratedCount++;
+            } else {
+                repeatedNodesCount++;
             }
         }
     }
