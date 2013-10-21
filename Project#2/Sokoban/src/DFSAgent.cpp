@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <set>
+#include <stack>
 #include "../include/Location.h"
 
 DFSAgent::DFSAgent(string in, string out, bool statFlag)
@@ -46,7 +47,45 @@ void DFSAgent::solve() {
     currState.boxes = puzzle.boxes;
     nodesGeneratedCount = 0;
     repeatedNodesCount = 0;
-    dfs(currState, found);
+    //dfs(currState, found);
+    stack<State> s;
+    s.push(currState);
+    while (!s.empty()) {
+        currState = s.top();
+        s.pop();
+        for (int i = 3; i >= 0; i--) {
+            nodesGeneratedCount++;
+            State nextState = currState;
+            nextState.pLoc.x += delta[i][0];
+            nextState.pLoc.y += delta[i][1];
+            nextState.prevMoves.push_back(direction[i]);
+            if (puzzle.configuration[nextState.pLoc.x][nextState.pLoc.y] == '#')
+                continue;   //hit wall, discard state
+            if (nextState.boxes.find(nextState.pLoc) != nextState.boxes.end()) { // need to push box
+                Location nextDoor(nextState.pLoc.x + delta[i][0], nextState.pLoc.y + delta[i][1]);
+                if (puzzle.configuration[nextDoor.x][nextDoor.y] == '#')
+                    continue;   //next door is a wall, discard state
+                if (nextState.boxes.find(nextDoor) == nextState.boxes.end()) {
+                    nextState.boxes.erase(nextState.pLoc);
+                    nextState.boxes.insert(nextDoor);
+                    if (isDeadState(nextState, i))
+                        continue;   // after pushing a box, enter a dead state, get discarded
+                } else {
+                    continue;   //next door is a box, discard state
+                }
+            }
+            if (nextState.boxes == goalState.boxes) {
+                outputSol(nextState);
+                return;
+            }
+            if (visitedStates.find(nextState) == visitedStates.end()) {
+                visitedStates.insert(nextState);
+                s.push(nextState);
+            } else {
+                repeatedNodesCount++;
+            }
+        }
+    }
 }
 
 void DFSAgent::dfs(State &currState, bool &found) {

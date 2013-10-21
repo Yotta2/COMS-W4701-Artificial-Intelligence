@@ -46,7 +46,7 @@ int main()
     string inputFilename = "in.txt";
     string outputFilename = "out.txt";
     bool needStat;
-    char choice = true;
+    char choice = 'y';
     cout << "Welcome to Sokoban!..." << endl;
     inputFilename = specifyInputFile();
     outputFilename = specifyOutputFile();
