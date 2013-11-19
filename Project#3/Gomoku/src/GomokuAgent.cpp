@@ -1,5 +1,6 @@
 #include "../include/GomokuAgent.h"
 #include <cstdlib>
+#include <iomanip>
 
 GomokuAgent::GomokuAgent(int n, int m, int s, char p, char _mode) {
     //ctor
@@ -148,14 +149,21 @@ bool GomokuAgent::isOutOfBound(int x, int y) {
 
 void GomokuAgent::printBoard() {
     cout << "Now the game board looks like the following:" << endl;
+    cout << "   ";
+    for (int i = 0; i < boardDimension; i++)
+        cout << setw(3) << i;
+    cout << endl;
     for (int i = 0; i < boardDimension; i++) {
+        cout << setw(3) << i;
         for (int j = 0; j < boardDimension; j++)
-            cout << currState[i][j];
+            cout << setw(3) << currState[i][j];
         cout << endl;
     }
 }
 
 Move GomokuAgent::alphaBetaSearch() {
+    if (remainingMoveList.size() == boardDimension * boardDimension)
+        return Move(boardDimension / 2, boardDimension / 2);
     int depth = 5;
     Action bestAction = maxValue(currState, depth, LLONG_MIN, LLONG_MAX);
     return bestAction.move;
@@ -184,7 +192,8 @@ bool GomokuAgent::hasStoneNearby(int x, int y, Board &state) {
 GomokuAgent::Action GomokuAgent::maxValue(Board &state, int depth, long long alpha, long long beta) {
     //printBoard();
     if (depth == 0) {
-        Action action(Move(), evaluate(state, agentCharacter));
+        printBoard();
+        Action action(Move(1, 1), evaluate(state, agentCharacter));
         return action;
     }
     Move bestMove;
@@ -220,7 +229,8 @@ GomokuAgent::Action GomokuAgent::maxValue(Board &state, int depth, long long alp
 GomokuAgent::Action GomokuAgent::minValue(Board &state, int depth, long long alpha, long long beta) {
     //printBoard();
     if (depth == 0) {
-        Action action(Move(), evaluate(state, opponentCharacter));
+        printBoard();
+        Action action(Move(1, 1), evaluate(state, opponentCharacter));
         return action;
     }
     Move bestMove;
@@ -265,14 +275,15 @@ long long GomokuAgent::evaluate(Board &state, char nextTurnChar) {
     long long utility = 0;
     for (int i = winningChainLength - 1; i >= 1; i--) {
         if (hasOpen(i, agentCharacter, state))
-            utility += pow(2, i);
+            utility += pow(10, i);
         if (hasCapped(i, agentCharacter, state))
-            utility += pow(2, i) / 2;
+            utility += pow(10, i - 1);
         //if (hasOpen(i, opponentCharacter, state))
         //    utility -= pow(2, i) / 2;
         //if (hasCapped(i, opponentCharacter, state))
         //    utility -= pow(2, i) / 2 / 2;
     }
+    cout << "utility = " << utility << endl;
     return utility;
 }
 

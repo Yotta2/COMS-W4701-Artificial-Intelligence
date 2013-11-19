@@ -16,12 +16,17 @@ class GomokuAgent
 public:
     GomokuAgent(int n, int m, int s, char p, char _mode);
     void kickOff();
+    Move alphaBetaSearch();
+    Move getRandomMove();
+    void placePiece(Move &move, char stoneCharacter);
+    void printBoard();
+    bool gameOver(Move &lastMove, char lastPieceType);
+    char agentCharacter;  // 'x' or 'o'
+    char opponentCharacter; // 'x' or 'o'
 private:
     string PIPE_NAME = "mypipe";
     typedef vector<string> Board;
     Board currState;
-    char agentCharacter;  // 'x' or 'o'
-    char opponentCharacter; // 'x' or 'o'
     char mode; // d for dumb mode(use random strategy), s for smart mode(use alpha beta search)
     ofstream ofs;
     int boardDimension;
@@ -36,13 +41,8 @@ private:
     };
     int delta[4][2] = {{+1, 0}, {+1, +1}, {0, +1}, {-1, +1}};
 private:
-    Move alphaBetaSearch();
-    Move getRandomMove();
-    void placePiece(Move &move, char stoneCharacter);
     void writeToPipe(Move &move);
-    void printBoard();
     void outputStartInfo();
-    bool gameOver(Move &lastMove, char lastPieceType);
     bool hasUnbrokenChainOfLen(int len, Move &lastMove, char lastPieceType, Board &state);
     bool isOutOfBound(int x, int y);
     bool isIllegalMove(Move &move);
