@@ -1,6 +1,7 @@
 #include "../include/GomokuAgent.h"
+#include <cstdlib>
 
-GomokuAgent::GomokuAgent(int n, int m, int s, char p) {
+GomokuAgent::GomokuAgent(int n, int m, int s, char p, char _mode) {
     //ctor
     boardDimension = n;
     winningChainLength = m;
@@ -10,6 +11,7 @@ GomokuAgent::GomokuAgent(int n, int m, int s, char p) {
         opponentCharacter = 'o';
     else
         opponentCharacter = 'x';
+    mode = _mode;
     currState.assign(boardDimension, string(boardDimension, '.'));
     remainingMoveList.clear();
     for (int i = 0; i < n; i++)
@@ -18,6 +20,7 @@ GomokuAgent::GomokuAgent(int n, int m, int s, char p) {
             remainingMoveList.insert(move);
         }
     //printBoard();
+    ofs.open(PIPE_NAME, std::ofstream::out | std::ofstream::app);
 }
 
 void GomokuAgent::kickOff() {
@@ -34,13 +37,32 @@ void GomokuAgent::kickOff() {
         printBoard();
         if (gameOver(opponentMove, opponentCharacter))
             break;
-        agentMove = alphaBetaSearch();
+        if (mode == 's')
+            agentMove = alphaBetaSearch();
+        else
+            agentMove = getRandomMove();
         cout << "I choose move: " << agentMove.x << " " << agentMove.y << endl;
+        writeToPipe(agentMove);
         placePiece(agentMove, agentCharacter);
         printBoard();
         if (gameOver(agentMove, agentCharacter))
             break;
     }
+}
+
+void GomokuAgent::writeToPipe(Move &move) {
+    ofs << move.x << move.y << endl;
+}
+
+Move GomokuAgent::getRandomMove() {
+    unordered_set<Move, MoveKeyHash, MoveKeyEqual>::iterator itr = remainingMoveList.begin();
+    int randomNum = rand() % remainingMoveList.size();
+    Move move;
+    for (int i = 0; i < randomNum; i++) {
+        itr++;
+        move = *itr;
+    }
+    return move;
 }
 
 bool GomokuAgent::isIllegalMove(Move &move) {
