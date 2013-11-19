@@ -17,7 +17,7 @@ public:
     GomokuAgent(int n, int m, int s, char p, char _mode);
     void kickOff();
 private:
-    const string PIPE_NAME = "mypipe";
+    string PIPE_NAME = "mypipe";
     typedef vector<string> Board;
     Board currState;
     char agentCharacter;  // 'x' or 'o'

@@ -268,10 +268,10 @@ long long GomokuAgent::evaluate(Board &state, char nextTurnChar) {
             utility += pow(2, i);
         if (hasCapped(i, agentCharacter, state))
             utility += pow(2, i) / 2;
-        if (hasOpen(i, opponentCharacter, state))
-            utility -= pow(2, i) / 2;
-        if (hasCapped(i, opponentCharacter, state))
-            utility -= pow(2, i) / 2 / 2;
+        //if (hasOpen(i, opponentCharacter, state))
+        //    utility -= pow(2, i) / 2;
+        //if (hasCapped(i, opponentCharacter, state))
+        //    utility -= pow(2, i) / 2 / 2;
     }
     return utility;
 }
