@@ -2,6 +2,7 @@
 #define MOVE_H_INCLUDED
 
 #include <cstdlib>
+#include <functional>
 
 using namespace std;
 
