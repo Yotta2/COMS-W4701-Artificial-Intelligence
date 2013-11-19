@@ -1,6 +1,8 @@
 #ifndef MOVE_H_INCLUDED
 #define MOVE_H_INCLUDED
 
+#include <cstdlib>
+
 using namespace std;
 
 struct Move {
