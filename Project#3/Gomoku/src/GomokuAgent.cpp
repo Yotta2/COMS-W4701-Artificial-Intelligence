@@ -84,8 +84,8 @@ bool GomokuAgent::gameOver(Move &lastMove, char lastPieceType) {
 
 //test whether after move lastMove, an unbroken chain of len is formed
 bool GomokuAgent::hasUnbrokenChainOfLen(int len, Move &lastMove, char lastPieceType, Board &state) {
-    // try all 3 direcions
-    for (int i = 0; i < 3; i++) {
+    // try all 4 direcions
+    for (int i = 0; i < 4; i++) {
         int count = 1;
         int x = lastMove.x;
         int y = lastMove.y;
@@ -247,9 +247,9 @@ long long GomokuAgent::evaluate(Board &state, char nextTurnChar) {
         if (hasCapped(i, agentCharacter, state))
             utility += pow(2, i) / 2;
         if (hasOpen(i, opponentCharacter, state))
-            utility -= pow(2, i);
-        if (hasCapped(i, opponentCharacter, state))
             utility -= pow(2, i) / 2;
+        if (hasCapped(i, opponentCharacter, state))
+            utility -= pow(2, i) / 2 / 2;
     }
     return utility;
 }
@@ -290,7 +290,7 @@ bool GomokuAgent::hasOpenStartingFrom(int x, int y, int dir, int len, char piece
 bool GomokuAgent::hasOpen(int len, char pieceType, Board &state) {
     for (int i = 0; i < boardDimension; i++)
         for (int j = 0; j < boardDimension; j++)
-            for (int k = 0; k < 3; k++) {
+            for (int k = 0; k < 4; k++) {
                 if (hasOpenStartingFrom(i, j, k, len, pieceType, state))
                     return true;
             }
@@ -339,7 +339,7 @@ bool GomokuAgent::hasCappedStartingFrom(int x, int y, int dir, int len, char pie
 bool GomokuAgent::hasCapped(int len, char pieceType, Board &state) {
     for (int i = 0; i < boardDimension; i++)
         for (int j = 0; j < boardDimension; j++)
-            for (int k = 0; k < 3; k++) {
+            for (int k = 0; k < 4; k++) {
                 if (hasCappedStartingFrom(i, j, k, len, pieceType, state))
                     return true;
             }
