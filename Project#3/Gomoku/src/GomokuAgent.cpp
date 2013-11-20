@@ -164,7 +164,7 @@ void GomokuAgent::printBoard() {
 Move GomokuAgent::alphaBetaSearch() {
     if (remainingMoveList.size() == boardDimension * boardDimension)
         return Move(boardDimension / 2, boardDimension / 2);
-    int depth = 5;
+    int depth = 4;
     Action bestAction = maxValue(currState, depth, LLONG_MIN, LLONG_MAX);
     return bestAction.move;
 }
@@ -192,7 +192,7 @@ bool GomokuAgent::hasStoneNearby(int x, int y, Board &state) {
 GomokuAgent::Action GomokuAgent::maxValue(Board &state, int depth, long long alpha, long long beta) {
     //printBoard();
     if (depth == 0) {
-        printBoard();
+        //printBoard();
         Action action(Move(1, 1), evaluate(state, agentCharacter));
         return action;
     }
@@ -229,7 +229,7 @@ GomokuAgent::Action GomokuAgent::maxValue(Board &state, int depth, long long alp
 GomokuAgent::Action GomokuAgent::minValue(Board &state, int depth, long long alpha, long long beta) {
     //printBoard();
     if (depth == 0) {
-        printBoard();
+        //printBoard();
         Action action(Move(1, 1), evaluate(state, opponentCharacter));
         return action;
     }
@@ -273,29 +273,47 @@ long long GomokuAgent::evaluate(Board &state, char nextTurnChar) {
             return LLONG_MIN;
     }
     long long utility = 0;
-    for (int i = winningChainLength - 1; i >= 1; i--) {
-        if (hasOpen(i, agentCharacter, state))
-            utility += pow(10, i);
-        if (hasCapped(i, agentCharacter, state))
-            utility += pow(10, i - 1);
-        //if (hasOpen(i, opponentCharacter, state))
-        //    utility -= pow(2, i) / 2;
-        //if (hasCapped(i, opponentCharacter, state))
-        //    utility -= pow(2, i) / 2 / 2;
+    long long value = LLONG_MAX / 100;
+    for (int i = winningChainLength; i >= 1; i--) {
+        for (int x = 0; x < boardDimension; x++)
+            for (int y = 0; y < boardDimension; y++)
+                for (int k = 0; k < 4; k++) {
+                    if (hasOpenStartingFrom(x, y, k, i, agentCharacter, state))
+                        utility += value;
+                    if (hasCappedStartingFrom(x, y, k, i, agentCharacter, state))
+                        utility += value / 200;
+                    if (hasOpenStartingFrom(x, y, k, i, opponentCharacter, state))
+                        utility -= value;
+                    if (hasCappedStartingFrom(x, y, k, i, opponentCharacter, state))
+                        utility -= value / 200;
+                }
+        value /= 100;
     }
-    cout << "utility = " << utility << endl;
+    //cout << "utility = " << utility << endl;
     return utility;
 }
 
 bool GomokuAgent::hasOpenStartingFrom(int x, int y, int dir, int len, char pieceType, Board &state) {
     if (state[x][y] != pieceType)
         return false;
+    int expandLen = 0;
     int xNext = x - delta[dir][0];
     int yNext = y - delta[dir][1];
     if (isOutOfBound(xNext, yNext))
         return false;
     if (state[xNext][yNext] != '.')
         return false;
+
+    // expand...
+    while (true) {
+        if (isOutOfBound(xNext, yNext))
+            break;
+        if (state[xNext][yNext] != pieceType && state[xNext][yNext] != '.')
+            break;
+        expandLen++;
+        xNext -= delta[dir][0];
+        yNext -= delta[dir][1];
+    }
     xNext = x;
     yNext = y;
     int count = 0;
@@ -317,7 +335,23 @@ bool GomokuAgent::hasOpenStartingFrom(int x, int y, int dir, int len, char piece
     if (isOutOfBound(xNext, yNext))
         return false;
     if (state[xNext][yNext] == '.')
-        return true;
+        return false;
+
+    // expand...
+    while (true) {
+        if (isOutOfBound(xNext, yNext))
+            break;
+        if (state[xNext][yNext] != pieceType && state[xNext][yNext] != '.')
+            break;
+        expandLen++;
+        xNext += delta[dir][0];
+        yNext += delta[dir][1];
+    }
+
+    if (count + expandLen < winningChainLength)
+        return false;
+
+    return true;
 }
 
 bool GomokuAgent::hasOpen(int len, char pieceType, Board &state) {
