@@ -21,6 +21,7 @@ GomokuAgent::GomokuAgent(int n, int m, int s, char p, char _mode) {
             remainingMoveList.insert(move);
         }
     //printBoard();
+    srand (time(NULL));
     ofs.open(PIPE_NAME, std::ofstream::out | std::ofstream::app);
 }
 
@@ -107,8 +108,8 @@ bool GomokuAgent::gameOver(Move &lastMove, char lastPieceType) {
 
 //test whether after move lastMove, an unbroken chain of len is formed
 bool GomokuAgent::hasUnbrokenChainOfLen(int len, Move &lastMove, char lastPieceType, Board &state) {
-    // try all 4 direcions
-    for (int i = 0; i < 4; i++) {
+    // try all 8 direcions
+    for (int i = 0; i < 8; i++) {
         int count = 1;
         int x = lastMove.x;
         int y = lastMove.y;
@@ -164,7 +165,8 @@ void GomokuAgent::printBoard() {
 Move GomokuAgent::alphaBetaSearch() {
     if (remainingMoveList.size() == boardDimension * boardDimension)
         return Move(boardDimension / 2, boardDimension / 2);
-    int depth = 4;
+        //return Move(1, 1);
+    int depth = 5;
     Action bestAction = maxValue(currState, depth, LLONG_MIN, LLONG_MAX);
     return bestAction.move;
 }
@@ -176,8 +178,6 @@ bool GomokuAgent::opponentWon() {
 }
 
 bool GomokuAgent::hasStoneNearby(int x, int y, Board &state) {
-    int delta[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, +1},
-                       {+1, +1}, {+1, 0}, {+1, -1}, {0, -1}};
     for (int i = 0; i < 8; i++) {
         int xNext = x + delta[i][0];
         int yNext = y + delta[i][1];
@@ -273,21 +273,31 @@ long long GomokuAgent::evaluate(Board &state, char nextTurnChar) {
             return LLONG_MIN;
     }
     long long utility = 0;
-    long long value = LLONG_MAX / 100;
     for (int i = winningChainLength; i >= 1; i--) {
-        for (int x = 0; x < boardDimension; x++)
-            for (int y = 0; y < boardDimension; y++)
-                for (int k = 0; k < 4; k++) {
-                    if (hasOpenStartingFrom(x, y, k, i, agentCharacter, state))
-                        utility += value;
-                    if (hasCappedStartingFrom(x, y, k, i, agentCharacter, state))
-                        utility += value / 200;
-                    if (hasOpenStartingFrom(x, y, k, i, opponentCharacter, state))
-                        utility -= value;
-                    if (hasCappedStartingFrom(x, y, k, i, opponentCharacter, state))
-                        utility -= value / 200;
-                }
-        value /= 100;
+        if (hasOpen(i, agentCharacter, state) && !hasOpen(i, opponentCharacter, state)) {
+            utility = pow(4, i);
+            break;
+        }
+        if (hasOpen(i, agentCharacter, state) && hasOpen(i, opponentCharacter, state)) {
+            utility = pow(4, i) / 2;
+            break;
+        }
+        if (!hasOpen(i, agentCharacter, state) && hasOpen(i, opponentCharacter, state)) {
+            utility = -pow(4, i);;
+            break;
+        }
+        if (hasCapped(i, agentCharacter, state) && !hasCapped(i, opponentCharacter, state)) {
+            utility = pow(4, i) / 2;
+            break;
+        }
+        if (hasCapped(i, agentCharacter, state) && hasCapped(i, opponentCharacter, state)) {
+            utility = pow(4, i) / 4;
+            break;
+        }
+        if (!hasCapped(i, agentCharacter, state) && hasCapped(i, opponentCharacter, state)) {
+            utility = -pow(4, i) / 2;
+            break;
+        }
     }
     //cout << "utility = " << utility << endl;
     return utility;
@@ -330,11 +340,12 @@ bool GomokuAgent::hasOpenStartingFrom(int x, int y, int dir, int len, char piece
     }
     if (count != len)
         return false;
+        //return true;
     xNext += delta[dir][0];
     yNext += delta[dir][1];
     if (isOutOfBound(xNext, yNext))
         return false;
-    if (state[xNext][yNext] == '.')
+    if (state[xNext][yNext] != '.')
         return false;
 
     // expand...
@@ -357,7 +368,7 @@ bool GomokuAgent::hasOpenStartingFrom(int x, int y, int dir, int len, char piece
 bool GomokuAgent::hasOpen(int len, char pieceType, Board &state) {
     for (int i = 0; i < boardDimension; i++)
         for (int j = 0; j < boardDimension; j++)
-            for (int k = 0; k < 4; k++) {
+            for (int k = 0; k < 8; k++) {
                 if (hasOpenStartingFrom(i, j, k, len, pieceType, state))
                     return true;
             }
@@ -406,7 +417,7 @@ bool GomokuAgent::hasCappedStartingFrom(int x, int y, int dir, int len, char pie
 bool GomokuAgent::hasCapped(int len, char pieceType, Board &state) {
     for (int i = 0; i < boardDimension; i++)
         for (int j = 0; j < boardDimension; j++)
-            for (int k = 0; k < 4; k++) {
+            for (int k = 0; k < 8; k++) {
                 if (hasCappedStartingFrom(i, j, k, len, pieceType, state))
                     return true;
             }
