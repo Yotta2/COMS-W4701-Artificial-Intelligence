@@ -25,6 +25,10 @@ GomokuAgent::GomokuAgent(int n, int m, int s, char p, char _mode) {
     ofs.open(PIPE_NAME, std::ofstream::out | std::ofstream::app);
 }
 
+string GomokuAgent::PIPE_NAME = "mypipe";
+int GomokuAgent::delta[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, +1},
+                                {+1, +1}, {+1, 0}, {+1, -1}, {0, -1}};
+
 void GomokuAgent::kickOff() {
     cout << "Game kicks off..." << endl;
     outputStartInfo();
