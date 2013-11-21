@@ -24,7 +24,7 @@ public:
     char agentCharacter;  // 'x' or 'o'
     char opponentCharacter; // 'x' or 'o'
 private:
-    string PIPE_NAME = "mypipe";
+    const string PIPE_NAME = "mypipe";
     typedef vector<string> Board;
     Board currState;
     char mode; // d for dumb mode(use random strategy), s for smart mode(use alpha beta search)
@@ -40,7 +40,7 @@ private:
         Action(Move _move, int _minimax) : move(_move), minimax(_minimax) {}
     };
     //int delta[4][2] = {{+1, 0}, {+1, +1}, {0, +1}, {-1, +1}};
-    int delta[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, +1},
+    const int delta[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, +1},
                        {+1, +1}, {+1, 0}, {+1, -1}, {0, -1}};
 private:
     void writeToPipe(Move &move);
