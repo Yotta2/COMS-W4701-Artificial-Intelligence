@@ -23,6 +23,15 @@ GomokuAgent::GomokuAgent(int n, int m, int s, char p, char _mode) {
     //printBoard();
     srand (time(NULL));
     ofs.open(PIPE_NAME, std::ofstream::out | std::ofstream::app);
+    //...
+//    currState[2][3] = 'x';
+//    currState[3][3] = 'x';
+//    currState[4][3] = 'x';
+//    currState[5][3] = 'x';
+//    remainingMoveList.erase(Move(2, 3));
+//    remainingMoveList.erase(Move(3, 3));
+//    remainingMoveList.erase(Move(4, 3));
+//    remainingMoveList.erase(Move(5, 3));
 }
 
 string GomokuAgent::PIPE_NAME = "mypipe";
@@ -170,15 +179,29 @@ Move GomokuAgent::alphaBetaSearch() {
     if (remainingMoveList.size() == boardDimension * boardDimension)
         return Move(boardDimension / 2, boardDimension / 2);
         //return Move(1, 1);
-    int depth = 5;
+    int depth = 4;
+    if (timeLimit < 10)
+        depth = 3;
     Action bestAction = maxValue(currState, depth, LLONG_MIN, LLONG_MAX);
     return bestAction.move;
 }
 
-bool GomokuAgent::agentWon() {
+bool GomokuAgent::agentWon(Move &lastMove, char lastPieceType, Board &state) {
+//    if (hasOpen(winningChainLength - 1, agentCharacter, state)
+//        && !hasOpen(winningChainLength - 1, opponentCharacter, state)
+//        && !hasCapped(winningChainLength - 1, opponentCharacter, state))
+//        return true;
+    return (lastPieceType == agentCharacter &&
+            hasUnbrokenChainOfLen(winningChainLength, lastMove, lastPieceType, state));
 }
 
-bool GomokuAgent::opponentWon() {
+bool GomokuAgent::opponentWon(Move &lastMove, char lastPieceType, Board &state) {
+//    if (hasOpen(winningChainLength - 1, opponentCharacter, state)
+//        && !hasOpen(winningChainLength - 1, agentCharacter, state)
+//        && !hasCapped(winningChainLength - 1, agentCharacter, state))
+//        return true;
+    return (lastPieceType == opponentCharacter &&
+            hasUnbrokenChainOfLen(winningChainLength, lastMove, lastPieceType, state));
 }
 
 bool GomokuAgent::hasStoneNearby(int x, int y, Board &state) {
@@ -200,15 +223,14 @@ GomokuAgent::Action GomokuAgent::maxValue(Board &state, int depth, long long alp
         Action action(Move(1, 1), evaluate(state, agentCharacter));
         return action;
     }
-    Move bestMove;
+    Move bestMove = *remainingMoveList.begin();
     long long minimax = LLONG_MIN;
     unordered_set<Move, MoveKeyHash, MoveKeyEqual>::iterator itr = remainingMoveList.begin();
     for (; itr != remainingMoveList.end(); itr++) {
         Move move = *itr;
         if (state[move.x][move.y] == '.' && hasStoneNearby(move.x, move.y, state)) {
             state[move.x][move.y] = agentCharacter;
-            if (hasUnbrokenChainOfLen(winningChainLength, move, agentCharacter, state)
-                || hasOpen(winningChainLength - 1, agentCharacter, state)) {
+            if (agentWon(move, agentCharacter, state)) {
                 minimax = LLONG_MAX;
                 bestMove = move;
                 state[move.x][move.y] = '.';
@@ -237,15 +259,14 @@ GomokuAgent::Action GomokuAgent::minValue(Board &state, int depth, long long alp
         Action action(Move(1, 1), evaluate(state, opponentCharacter));
         return action;
     }
-    Move bestMove;
+    Move bestMove = *remainingMoveList.begin();
     long long minimax = LLONG_MAX;
     unordered_set<Move, MoveKeyHash, MoveKeyEqual>::iterator itr = remainingMoveList.begin();
     for (; itr != remainingMoveList.end(); itr++) {
         Move move = *itr;
         if (state[move.x][move.y] == '.' && hasStoneNearby(move.x, move.y, state)) {
             state[move.x][move.y] = opponentCharacter;
-            if (hasUnbrokenChainOfLen(winningChainLength, move, opponentCharacter, state)
-                || hasOpen(winningChainLength - 1, opponentCharacter, state)) {
+            if (opponentWon(move, opponentCharacter, state)) {
                 minimax = LLONG_MIN;
                 bestMove = move;
                 state[move.x][move.y] = '.';
@@ -270,36 +291,36 @@ GomokuAgent::Action GomokuAgent::minValue(Board &state, int depth, long long alp
 long long GomokuAgent::evaluate(Board &state, char nextTurnChar) {
     if (nextTurnChar == agentCharacter) {
         if (hasOpen(winningChainLength - 1, agentCharacter, state) || hasCapped(winningChainLength - 1, agentCharacter, state))
-            return LLONG_MAX;
+            return LLONG_MAX / 10;
     }
     if (nextTurnChar == opponentCharacter) {
         if (hasOpen(winningChainLength - 1, opponentCharacter, state) || hasCapped(winningChainLength - 1, opponentCharacter, state))
-            return LLONG_MIN;
+            return LLONG_MIN / 10;
     }
     long long utility = 0;
     for (int i = winningChainLength; i >= 1; i--) {
         if (hasOpen(i, agentCharacter, state) && !hasOpen(i, opponentCharacter, state)) {
-            utility = pow(4, i);
+            utility = pow(100, i);
             break;
         }
         if (hasOpen(i, agentCharacter, state) && hasOpen(i, opponentCharacter, state)) {
-            utility = pow(4, i) / 2;
+            utility = pow(100, i) / 300;
             break;
         }
         if (!hasOpen(i, agentCharacter, state) && hasOpen(i, opponentCharacter, state)) {
-            utility = -pow(4, i);;
+            utility = pow(100, i);;
             break;
         }
         if (hasCapped(i, agentCharacter, state) && !hasCapped(i, opponentCharacter, state)) {
-            utility = pow(4, i) / 2;
+            utility = pow(100, i) / 300;
             break;
         }
         if (hasCapped(i, agentCharacter, state) && hasCapped(i, opponentCharacter, state)) {
-            utility = pow(4, i) / 4;
+            utility = pow(100, i) / 300;
             break;
         }
         if (!hasCapped(i, agentCharacter, state) && hasCapped(i, opponentCharacter, state)) {
-            utility = -pow(4, i) / 2;
+            utility = pow(100, i) / 150;
             break;
         }
     }
@@ -380,42 +401,84 @@ bool GomokuAgent::hasOpen(int len, char pieceType, Board &state) {
 }
 
 bool GomokuAgent::hasCappedStartingFrom(int x, int y, int dir, int len, char pieceType, Board &state) {
-    int cappedCount = 0;
     if (state[x][y] != pieceType)
         return false;
     int xNext = x - delta[dir][0];
     int yNext = y - delta[dir][1];
-    if (isOutOfBound(xNext, yNext))
-        cappedCount++;
-    else {
-        if (state[xNext][yNext] != pieceType && state[xNext][yNext] != '.')
-            cappedCount++;
-    }
-    xNext = x;
-    yNext = y;
-    int count = 0;
-    while (true) {
-        if (isOutOfBound(xNext, yNext))
+    if (isOutOfBound(xNext, yNext)
+       || (state[xNext][yNext] != pieceType && state[xNext][yNext] != '.')) {
+        // reverse direction is blocked
+        xNext = x;
+        yNext = y;
+        int count = 0;
+        while (true) {
+            if (isOutOfBound(xNext, yNext))
+                return false;
+            if (state[xNext][yNext] != pieceType)
+                return false;
+            count++;
+            if (count == len)
+                break;
+            xNext += delta[dir][0];
+            yNext += delta[dir][1];
+        }
+        if (count != len)
             return false;
-        if (state[xNext][yNext] != pieceType)
-            return false;
-        count++;
-        if (count == len)
-            break;
         xNext += delta[dir][0];
         yNext += delta[dir][1];
-    }
-    if (count != len)
+        if (isOutOfBound(xNext, yNext))
+            return false;
+        if (state[xNext][yNext] != '.')
+            return false;
+        int expandLen = 0;
+        // expand...
+        while (true) {
+            if (isOutOfBound(xNext, yNext))
+                break;
+            if (state[xNext][yNext] != pieceType && state[xNext][yNext] != '.')
+                break;
+            expandLen++;
+            xNext += delta[dir][0];
+            yNext += delta[dir][1];
+        }
+        return (expandLen + count >= winningChainLength);
+    } else {
+        //reverse direction is unblocked
+        int expandLen = 0;
+        // expand...
+        while (true) {
+            if (isOutOfBound(xNext, yNext))
+                break;
+            if (state[xNext][yNext] != pieceType && state[xNext][yNext] != '.')
+                break;
+            expandLen++;
+            xNext -= delta[dir][0];
+            yNext -= delta[dir][1];
+        }
+        xNext = x;
+        yNext = y;
+        int count = 0;
+        while (true) {
+            if (isOutOfBound(xNext, yNext))
+                return false;
+            if (state[xNext][yNext] != pieceType)
+                return false;
+            count++;
+            if (count == len)
+                break;
+            xNext += delta[dir][0];
+            yNext += delta[dir][1];
+        }
+        if (count != len)
+            return false;
+        xNext += delta[dir][0];
+        yNext += delta[dir][1];
+        if (isOutOfBound(xNext, yNext))
+            return true;
+        if (state[xNext][yNext] != '.' && state[xNext][yNext] != pieceType)
+            return true;
         return false;
-    xNext += delta[dir][0];
-    yNext += delta[dir][1];
-    if (isOutOfBound(xNext, yNext))
-        cappedCount++;
-    else {
-        if (state[xNext][yNext] != pieceType && state[xNext][yNext] != '.')
-            cappedCount++;
     }
-    return (cappedCount == 1);
 }
 
 bool GomokuAgent::hasCapped(int len, char pieceType, Board &state) {
