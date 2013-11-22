@@ -308,7 +308,7 @@ long long GomokuAgent::evaluate(Board &state, char nextTurnChar) {
             break;
         }
         if (!hasOpen(i, agentCharacter, state) && hasOpen(i, opponentCharacter, state)) {
-            utility = pow(100, i);;
+            utility = -pow(100, i);;
             break;
         }
         if (hasCapped(i, agentCharacter, state) && !hasCapped(i, opponentCharacter, state)) {
@@ -316,11 +316,11 @@ long long GomokuAgent::evaluate(Board &state, char nextTurnChar) {
             break;
         }
         if (hasCapped(i, agentCharacter, state) && hasCapped(i, opponentCharacter, state)) {
-            utility = pow(100, i) / 300;
+            utility = pow(100, i) / 500;
             break;
         }
         if (!hasCapped(i, agentCharacter, state) && hasCapped(i, opponentCharacter, state)) {
-            utility = pow(100, i) / 150;
+            utility = -pow(100, i) / 150;
             break;
         }
     }
