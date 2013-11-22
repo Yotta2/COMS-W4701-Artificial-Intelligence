@@ -199,15 +199,21 @@ void GomokuAgent::printBoard() {
     }
 }
 
+int GomokuAgent::timeUsed() {
+    timer.setEndTime();
+    return timer.getTimeElapsed() / 1000;
+}
+
 Move GomokuAgent::alphaBetaSearch() {
     if (remainingMoveList.size() == boardDimension * boardDimension)
         return Move(boardDimension / 2, boardDimension / 2);
         //return Move(1, 1);
     int depth = 4;
-    if (timeLimit < 10)
+    if (timeLimit < 150)
         depth = 3;
     timer.setStartTime();
     Action bestAction = maxValue(currState, depth, LLONG_MIN, LLONG_MAX);
+    cout << "Used time(seconds): " << timeUsed() << endl;
     return bestAction.move;
 }
 

@@ -60,6 +60,7 @@ private:
     bool hasOpenStartingFrom(int x, int y, int dir, int len, char pieceType, Board &state);
     bool hasCappedStartingFrom(int x, int y, int dir, int len, char pieceType, Board &state);
     bool timeLimitExceeded();
+    int timeUsed();
 };
 
 #endif // GOMOKUAGENT_H
