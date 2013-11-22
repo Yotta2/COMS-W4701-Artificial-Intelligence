@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-c -std=c++0x #-Wall 
+CFLAGS=-c -std=c++0x -O3 #-Wall 
 LDFLAGS=-std=c++0x  
 SOURCES=$(wildcard src/*.cpp)
 INCLUDES = $(wildcard include/*.h)

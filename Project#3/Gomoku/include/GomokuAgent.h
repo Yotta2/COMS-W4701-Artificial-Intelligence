@@ -8,6 +8,7 @@
 #include <climits>
 #include <cmath>
 #include "../include/Move.h"
+#include "../include/Timer.h"
 
 using namespace std;
 
@@ -41,6 +42,7 @@ private:
     };
     //int delta[4][2] = {{+1, 0}, {+1, +1}, {0, +1}, {-1, +1}};
     static int delta[8][2];
+    Timer timer;
 private:
     void writeToPipe(Move &move);
     void outputStartInfo();
@@ -57,6 +59,7 @@ private:
     bool hasCapped(int len, char pieceType, Board &state);
     bool hasOpenStartingFrom(int x, int y, int dir, int len, char pieceType, Board &state);
     bool hasCappedStartingFrom(int x, int y, int dir, int len, char pieceType, Board &state);
+    bool timeLimitExceeded();
 };
 
 #endif // GOMOKUAGENT_H

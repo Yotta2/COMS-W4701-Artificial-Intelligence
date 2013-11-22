@@ -24,14 +24,38 @@ GomokuAgent::GomokuAgent(int n, int m, int s, char p, char _mode) {
     srand (time(NULL));
     ofs.open(PIPE_NAME, std::ofstream::out | std::ofstream::app);
     //...
-//    currState[2][3] = 'x';
-//    currState[3][3] = 'x';
-//    currState[4][3] = 'x';
-//    currState[5][3] = 'x';
-//    remainingMoveList.erase(Move(2, 3));
-//    remainingMoveList.erase(Move(3, 3));
-//    remainingMoveList.erase(Move(4, 3));
-//    remainingMoveList.erase(Move(5, 3));
+//    currState[7][7] = 'x';
+//    currState[8][6] = 'o';
+//    currState[7][8] = 'x';
+//    currState[7][6] = 'o';
+//    currState[6][6] = 'x';
+//    currState[5][5] = 'o';
+//    currState[8][8] = 'x';
+//    currState[9][9] = 'o';
+//    currState[7][9] = 'x';
+//    currState[9][6] = 'o';
+//    currState[10][6] = 'x';
+//    currState[9][8] = 'o';
+//    currState[9][7] = 'x';
+//    currState[6][10] = 'o';
+//    currState[7][11] = 'x';
+//    currState[7][10] = 'o';
+//    remainingMoveList.erase(Move(7, 7));
+//    remainingMoveList.erase(Move(8, 6));
+//    remainingMoveList.erase(Move(7, 8));
+//    remainingMoveList.erase(Move(7, 6));
+//    remainingMoveList.erase(Move(6, 6));
+//    remainingMoveList.erase(Move(5, 5));
+//    remainingMoveList.erase(Move(8, 8));
+//    remainingMoveList.erase(Move(9, 9));
+//    remainingMoveList.erase(Move(7, 9));
+//    remainingMoveList.erase(Move(9, 6));
+//    remainingMoveList.erase(Move(10, 6));
+//    remainingMoveList.erase(Move(9, 8));
+//    remainingMoveList.erase(Move(9, 7));
+//    remainingMoveList.erase(Move(6, 10));
+//    remainingMoveList.erase(Move(7, 11));
+//    remainingMoveList.erase(Move(7, 10));
 }
 
 string GomokuAgent::PIPE_NAME = "mypipe";
@@ -182,6 +206,7 @@ Move GomokuAgent::alphaBetaSearch() {
     int depth = 4;
     if (timeLimit < 10)
         depth = 3;
+    timer.setStartTime();
     Action bestAction = maxValue(currState, depth, LLONG_MIN, LLONG_MAX);
     return bestAction.move;
 }
@@ -216,6 +241,11 @@ bool GomokuAgent::hasStoneNearby(int x, int y, Board &state) {
     return false;
 }
 
+bool GomokuAgent::timeLimitExceeded() {
+    timer.setEndTime();
+    return (timer.getTimeElapsed() > timeLimit * 1000);
+}
+
 GomokuAgent::Action GomokuAgent::maxValue(Board &state, int depth, long long alpha, long long beta) {
     //printBoard();
     if (depth == 0) {
@@ -227,6 +257,8 @@ GomokuAgent::Action GomokuAgent::maxValue(Board &state, int depth, long long alp
     long long minimax = LLONG_MIN;
     unordered_set<Move, MoveKeyHash, MoveKeyEqual>::iterator itr = remainingMoveList.begin();
     for (; itr != remainingMoveList.end(); itr++) {
+        if (timeLimitExceeded())
+            break;
         Move move = *itr;
         if (state[move.x][move.y] == '.' && hasStoneNearby(move.x, move.y, state)) {
             state[move.x][move.y] = agentCharacter;
@@ -263,6 +295,8 @@ GomokuAgent::Action GomokuAgent::minValue(Board &state, int depth, long long alp
     long long minimax = LLONG_MAX;
     unordered_set<Move, MoveKeyHash, MoveKeyEqual>::iterator itr = remainingMoveList.begin();
     for (; itr != remainingMoveList.end(); itr++) {
+        if (timeLimitExceeded())
+            break;
         Move move = *itr;
         if (state[move.x][move.y] == '.' && hasStoneNearby(move.x, move.y, state)) {
             state[move.x][move.y] = opponentCharacter;
