@@ -1,0 +1,11 @@
+EGG ^ ETO => PIGN 
+ETON ^ LWN ^ TL ^ MWN => PTMP
+ETON ^ LWN ^ MW => PIGN
+ETON ^ LWN ^ TLN => PIGN
+ETON ^ LW => PSTM
+FT ^ FC => EGG
+FT 
+FC
+TL
+MW
+ETO
