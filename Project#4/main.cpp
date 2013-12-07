@@ -33,12 +33,49 @@ bool isImplication(string line) {
     return false;
 }
 
+Implication convertToImplication(string line) {
+	unordered_set<string> premises;
+	string sentence = line;
+	string conclusion = "F";
+	for (int i = 0; i < line.size(); i++)
+		if (line[i] == 'v')
+			line[i] = ' ';
+	stringstream ss(line);
+	string premise;
+	while (ss >> premise) {
+		if (premise[0] != '~') {
+			conclusion = premise;
+		} else {
+			premise.erase(premise.begin());
+			premises.insert(premise);
+		}
+	}
+	sentence += "(";
+	for (unordered_set<string>::iterator itr = premises.begin(); itr != premises.end(); itr++)
+		sentence += *itr + " ^ ";
+	sentence[sentence.size() - 2] = '=';
+	sentence[sentence.size() - 1] = '>';
+	sentence += " " + conclusion + ")";
+	Implication implication(sentence, premises, conclusion);
+	return implication;
+}
+
+bool isFact(string line) {
+	for (int i = 0; i < line.size(); i++)
+		if (line[i] == 'v' || line[i] == '=' || line[i] == '^' || line[i] == '>')
+			return false;
+	return true;
+}
+
 void parseFile(ifstream &ifs, vector<string> &initSymbols, vector<Implication> &implications) {
     string line;
     while (getline(ifs, line)) {
         if (!isImplication(line)) {
 			removeTailingZero(line);
-            initSymbols.push_back(line);
+			if (isFact(line))
+           	 	initSymbols.push_back(line);
+			else
+				implications.push_back(convertToImplication(line));
         } else {
             unordered_set<string> premises;
             string sentence = line;
