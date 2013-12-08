@@ -7,6 +7,7 @@
 #include <queue>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -16,6 +17,13 @@ struct Implication {
     string conclusion;
     Implication(string s, unordered_set<string> p, string c) :
         sentence(s), premises(p), conclusion(c) {}
+};
+
+struct Clause {
+	vector<string> symbols;
+	bool operator==(const Clause &rhs) {
+		return this->symbols == rhs.symbols;
+	}
 };
 
 void removeTailingZero(string &line) {
@@ -194,7 +202,195 @@ void backwardChainingCheck(ifstream &ifs, string query) {
 	}
 }
 
+Clause getClause(string disjunction) {
+	Clause clause;
+	for (int i = 0; i < disjunction.size(); i++)
+		if (disjunction[i] == '(' || disjunction[i] == ')' || disjunction[i] == 'v' || disjunction[i] == '^') 
+			disjunction[i] = ' ';
+	stringstream ss(disjunction);
+	string symbol;
+	while (ss >> symbol) {
+		clause.symbols.push_back(symbol);
+	}
+	return clause;
+}
+
+vector<Clause> convertToClauses(ifstream &ifs, string query) {
+	vector<Clause> clauses;
+	string sentence;
+	getline(ifs, sentence);
+	if (query[0] == '~')
+		query.erase(query.begin());
+	else
+		query = '~' + query;
+	sentence += " ^ " + query + " ^";
+	sentence = "^ " + sentence;
+	int prevIndex = 0;
+	for (int i = 1; i < sentence.size(); i++)
+		if (sentence[i] == '^') {
+			clauses.push_back(getClause(sentence.substr(prevIndex, i - prevIndex + 1)));
+			prevIndex = i;
+		}
+	return clauses;
+}
+
+void printAClause(Clause clause) {
+	if (clause.symbols.size() == 1) {
+		cout << clause.symbols[0];
+	} else {
+		cout << "( ";
+		for (int i = 0; i < clause.symbols.size(); i++)
+			if (i != clause.symbols.size() - 1)
+				cout << clause.symbols[i] << " v ";
+			else	
+				cout << clause.symbols[i];
+		cout << " )";
+	}
+}
+
+bool areComplementary(string symbol0, string symbol1) {
+	if (symbol0[0] == '~' && symbol1[1] != '~' && symbol0.substr(1) == symbol1)
+		return true;
+	if (symbol0[0] != '~' && symbol1[0] == '~' && symbol1.substr(1) == symbol0)
+		return true;
+	return false;
+}
+
+Clause resolveTwoClauses(Clause clause0, Clause clause1) {
+	sort(clause0.symbols.begin(), clause0.symbols.end());
+	sort(clause0.symbols.begin(), clause0.symbols.end());
+	if (clause0.symbols == clause1.symbols)
+		return clause0;
+	Clause newClause;
+	if (clause0.symbols.empty() && clause1.symbols.empty())
+		return newClause;
+	if (clause0.symbols.empty() && !clause1.symbols.empty())
+		return clause1;
+	if (!clause0.symbols.empty() && clause1.symbols.empty())
+		return clause0;
+	int i = 0;
+	int j = 0;
+	if (clause0.symbols[i] <= clause1.symbols[j]) {
+		newClause.symbols.push_back(clause0.symbols[i]);
+		i++;
+	} else {
+		newClause.symbols.push_back(clause1.symbols[j]);
+		j++;
+	}
+	int index = 0;
+	while (i < clause0.symbols.size() && j < clause1.symbols.size()) {
+		if (clause0.symbols[i] <= clause1.symbols[j]) {
+			if (newClause.symbols[index] != clause0.symbols[i]) {
+				newClause.symbols.push_back(clause0.symbols[i]);
+				index++;
+			}
+			i++;
+		} else {
+			if (newClause.symbols[index] != clause1.symbols[j]) {
+				newClause.symbols.push_back(clause1.symbols[j]);
+				index++;
+			}
+			j++;
+		}
+	}
+	while (i < clause0.symbols.size()) {
+		if (newClause.symbols[index] != clause0.symbols[i]) {
+			newClause.symbols.push_back(clause0.symbols[i]);
+			index++;
+		}
+		i++;
+	}
+	while (j < clause1.symbols.size()) {
+		if (newClause.symbols[index] != clause1.symbols[j]) {
+			newClause.symbols.push_back(clause1.symbols[j]);
+			index++;
+		}
+		j++;
+	}
+	return newClause;
+}
+
+vector<Clause> plResolve(Clause clause0, Clause clause1) {
+	vector<Clause> resolvents;
+	for (int i = 0; i < clause0.symbols.size(); i++)
+		for (int j = 0; j < clause1.symbols.size(); j++) {
+			string symbol0 = clause0.symbols[i];
+			string symbol1 = clause1.symbols[j];
+			if (areComplementary(symbol0, symbol1)) {
+				cout << "resolve: ";
+				printAClause(clause0);
+				cout << " and ";
+				printAClause(clause1);
+				clause0.symbols.erase(clause0.symbols.begin() + i);
+				clause1.symbols.erase(clause1.symbols.begin() + j);
+				Clause newClause = resolveTwoClauses(clause0, clause1);
+				if (newClause.symbols.empty()) {
+					cout << " --> NULL" << endl;
+					return resolvents;
+				} else {
+					resolvents.push_back(newClause);
+					cout << " --> ";
+					printAClause(newClause);
+					cout << endl;
+					return resolvents;
+				}
+			}
+		}
+	resolvents.push_back(clause0);
+	resolvents.push_back(clause1);
+	return resolvents;
+}
+
+bool hasClause(vector<Clause> &mergedClauses, Clause clause) {
+	for (int i = 0; i < mergedClauses.size(); i++)
+		if (mergedClauses[i].symbols == clause.symbols)
+			return true;
+	return false;
+}
+
+vector<Clause> mergeClauses(vector<Clause> clauses0, vector<Clause> clauses1) {
+	for (int i = 0; i < clauses0.size(); i++)
+		sort(clauses0[i].symbols.begin(), clauses0[i].symbols.end());
+	for (int i = 0; i < clauses1.size(); i++)
+		sort(clauses1[i].symbols.begin(), clauses1[i].symbols.end());
+	vector<Clause> mergedClauses = clauses0;
+	for (int i = 0; i < clauses1.size(); i++)
+		if (!hasClause(mergedClauses, clauses1[i]))
+			mergedClauses.push_back(clauses1[i]);
+	return mergedClauses;
+}
+
+void printClauses(vector<Clause> clauses) {
+	for (int i = 0; i < clauses.size(); i++) {
+		printAClause(clauses[i]);
+		cout << " ";
+	}
+	cout << endl;
+}
+
 void CNFCheck(ifstream &ifs, string query) {
+	vector<Clause> clauses = convertToClauses(ifs, query);
+	//printClauses(clauses);
+	//return;
+	vector<Clause> newClauses;
+	while (true) {
+		for (int i = 0; i < clauses.size(); i++)
+			for (int j = i + 1; j < clauses.size(); j++) {
+				vector<Clause> resolvents = plResolve(clauses[i], clauses[j]);
+				if (resolvents.empty()) {
+					cout << "--> true" << endl;
+					return;
+				}
+				newClauses = mergeClauses(newClauses, resolvents);
+				//cout << "newClauses: ";
+				//printClauses(newClauses);
+			}
+		if (newClauses.size() <= clauses.size()) {
+			cout << "--> false" << endl;
+			return;
+		}
+		clauses = mergeClauses(clauses, newClauses);
+	}
 }
 
 int main(int argc, const char* argv[]) {
