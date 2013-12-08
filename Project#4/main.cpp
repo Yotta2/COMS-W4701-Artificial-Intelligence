@@ -125,10 +125,6 @@ void forwardChainingCheck(ifstream &ifs, string query) {
     while (!agenda.empty()) {
         string p = agenda.front();
         agenda.pop();
-        if (p == query) {
-            cout << "--> true" << endl;
-            return;
-        }
         if (inferred.find(p) == inferred.end()) {
             inferred.insert(p);
             for (int i = 0; i < implications.size(); i++)
@@ -136,8 +132,12 @@ void forwardChainingCheck(ifstream &ifs, string query) {
                     implications[i].premises.erase(p);
                     if (implications[i].premises.empty()) {
                         cout << implications[i].sentence << endl;
-                        agenda.push(implications[i].conclusion);
-                    }
+						if (implications[i].conclusion == query) {
+							cout << "--> true" << endl;
+							return;
+						}
+						agenda.push(implications[i].conclusion);
+					}
                 }
         }
     }

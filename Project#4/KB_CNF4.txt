@@ -1,0 +1,1 @@
+( ~S v ~M v T ) ^ ( ~T v ~H v C ) ^ ( ~C v L ) ^ S ^ M ^ H

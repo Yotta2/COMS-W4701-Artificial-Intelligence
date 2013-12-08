@@ -1,0 +1,1 @@
+( ~red v ~blue v purple ) ^ ( ~blue v ~yellow v green ) ^ ( ~yellow v ~red v orange ) ^ ( ~purple v ~orange v red ) ^ ( ~purple v ~green v blue ) ^ ( ~green v ~orange v yellow ) ^ ( ~red v ~green v brown ) ^ ( ~blue v ~orange v brown ) ^ ( ~purple v ~yellow v brown ) ^ red ^ blue ^ yellow

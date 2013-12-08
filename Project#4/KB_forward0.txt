@@ -1,0 +1,12 @@
+red ^ blue => purple
+blue ^ yellow => green
+yellow ^ red => orange
+purple ^ orange => red
+purple ^ green => blue
+green ^ orange => yellow
+red ^ green => brown
+blue ^ orange => brown
+purple ^ yellow => brown
+red
+blue
+yellow
